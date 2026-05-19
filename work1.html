@@ -1,0 +1,3317 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>非线性 ▸ 思维模型周期表 · Vol.001</title>
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link href="https://fonts.loli.net/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600&family=Caveat:wght@400;500;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d12;
+  --bg-2:#10141b;
+  --bg-3:#161c25;
+  --bg-4:#1d2530;
+  --line:#1f2630;
+  --line-2:#2a323e;
+  --line-3:#3a4250;
+
+  --fg:#e8e6e0;
+  --fg-2:#a8a89e;
+  --fg-3:#6b6e76;
+  --fg-4:#42454d;
+
+  --accent:#f5a524;
+  --accent-2:#ffb84d;
+  --accent-dim:#7a5610;
+
+  --data-1:#5b8def;
+  --data-2:#e85d75;
+  --data-3:#4ade80;
+  --data-4:#a78bfa;
+
+  --paper:#f4ecd8;        /* 便签纸黄 */
+  --paper-pink:#ffd9e0;   /* 粉色便签 */
+  --paper-cyan:#cdebef;   /* 蓝色便签 */
+
+  --serif:"Noto Serif SC", "Songti SC", serif;
+  --mono:"JetBrains Mono", "SF Mono", Menlo, monospace;
+  --sans:"Inter", "PingFang SC", -apple-system, sans-serif;
+  --hand:"Caveat", "Ma Shan Zheng", cursive;
+  --hand-cn:"Ma Shan Zheng", "Caveat", cursive;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.7;
+  overflow-x:hidden;
+  cursor:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px);
+  background-size:48px 48px;
+}
+::selection{background:var(--accent);color:var(--bg)}
+img{max-width:100%;display:block}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:none}
+input,select{font-family:inherit;cursor:none}
+a{cursor:none}
+
+@media (max-width:760px){
+  body, body *{cursor:auto !important}
+  .cursor-glow, .cursor-dot{display:none !important}
+}
+
+.serif{font-family:var(--serif)}
+.mono{font-family:var(--mono)}
+.hand{font-family:var(--hand)}
+
+/* ============== 自定义光标 ============== */
+.cursor-dot{
+  position:fixed;top:0;left:0;
+  width:6px;height:6px;
+  background:var(--accent);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:width .15s ease, height .15s ease, background .15s ease;
+}
+.cursor-glow{
+  position:fixed;top:0;left:0;
+  width:36px;height:36px;
+  border:1.5px solid var(--accent);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:width .25s ease, height .25s ease, opacity .2s ease, background .2s ease;
+  opacity:.7;
+}
+.cursor-glow.big{
+  width:64px;height:64px;
+  background:rgba(245,165,36,.08);
+  opacity:1;
+}
+.cursor-glow.click{
+  width:24px;height:24px;
+  background:var(--accent);
+  opacity:.4;
+}
+.cursor-dot.click{
+  width:14px;height:14px;
+}
+
+/* 光标跟随标签 */
+.cursor-label{
+  position:fixed;top:0;left:0;
+  pointer-events:none;
+  z-index:9997;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.12em;
+  color:var(--bg);
+  background:var(--accent);
+  padding:5px 9px;
+  white-space:nowrap;
+  transform:translate(28px, 12px);
+  opacity:0;
+  transition:opacity .2s ease;
+  text-transform:uppercase;
+}
+.cursor-label.show{opacity:1}
+
+/* ============== STATUS BAR ============== */
+.statusbar{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 28px;
+  background:rgba(10,13,18,.85);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.04em;
+  color:var(--fg-2);
+}
+.statusbar .left,.statusbar .right{display:flex;align-items:center;gap:18px}
+.statusbar .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.statusbar .sep{color:var(--fg-4)}
+.statusbar .live{color:var(--accent)}
+@media(max-width:760px){
+  .statusbar{padding:12px 14px;font-size:9px}
+  .statusbar .hide-mobile{display:none}
+}
+
+.progress{
+  position:fixed;top:0;left:0;height:1px;width:0%;
+  background:var(--accent);
+  z-index:60;
+  transition:width .12s linear;
+}
+
+/* ============== 章节通用 ============== */
+section{
+  position:relative;
+  padding:160px 6vw;
+  border-bottom:1px solid var(--line);
+}
+@media(max-width:760px){section{padding:90px 5vw}}
+
+.chapter-meta{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  color:var(--fg-3);
+  margin-bottom:32px;
+}
+.chapter-meta .num{color:var(--accent);font-weight:500}
+.chapter-meta .bar{flex:0 0 60px;height:1px;background:var(--line-2)}
+
+.h-display{
+  font-family:var(--serif);
+  font-weight:900;
+  font-size:clamp(40px, 6.4vw, 88px);
+  line-height:1.08;
+  letter-spacing:-.02em;
+  color:var(--fg);
+  margin-bottom:28px;
+}
+.h-display em{font-style:normal;color:var(--accent)}
+.h-display .strike{
+  text-decoration:line-through;
+  text-decoration-color:var(--data-2);
+  text-decoration-thickness:3px;
+  color:var(--fg-3);
+}
+
+.lede{
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:clamp(17px, 1.6vw, 21px);
+  line-height:1.7;
+  max-width:680px;
+  color:var(--fg-2);
+}
+.lede strong{color:var(--fg);font-weight:600}
+.lede em{color:var(--accent);font-style:normal;font-weight:500}
+
+.body-text{
+  font-family:var(--serif);
+  font-size:16px;line-height:1.85;
+  max-width:600px;
+  color:var(--fg-2);
+  margin-bottom:18px;
+}
+.body-text strong{color:var(--fg);font-weight:600}
+.body-text em{color:var(--accent);font-style:normal}
+
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ============== HERO ============== */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:140px 6vw 100px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:"";position:absolute;
+  top:30%;left:60%;width:60vw;height:60vw;
+  background:radial-gradient(circle, rgba(245,165,36,.05) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-meta{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  color:var(--fg-3);
+  margin-bottom:48px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.hero-meta .tag{
+  padding:5px 10px;
+  border:1px solid var(--line-2);
+  color:var(--fg-2);
+}
+.hero-meta .tag.active{
+  background:var(--accent);
+  color:var(--bg);
+  border-color:var(--accent);
+}
+.hero h1{
+  font-family:var(--serif);
+  font-weight:900;
+  font-size:clamp(56px, 11vw, 168px);
+  line-height:.92;
+  letter-spacing:-.03em;
+  margin-bottom:48px;
+  position:relative;
+}
+.hero h1 .quiet{color:var(--fg-3);font-weight:400}
+.hero h1 .strong{color:var(--fg)}
+.hero h1 .accent{color:var(--accent)}
+.hero h1 .strike{
+  text-decoration:line-through;
+  text-decoration-color:var(--data-2);
+  text-decoration-thickness:6px;
+  color:var(--fg-3);
+}
+.hero h1 .en{
+  display:block;
+  font-family:var(--mono);
+  font-size:.13em;
+  font-weight:400;
+  letter-spacing:.06em;
+  color:var(--fg-3);
+  margin-top:24px;
+  text-transform:uppercase;
+}
+.hero .sub{
+  max-width:580px;
+  font-family:var(--serif);
+  font-size:19px;
+  line-height:1.7;
+  color:var(--fg-2);
+  margin-bottom:60px;
+}
+.hero .sub em{color:var(--accent);font-style:normal;font-weight:500}
+
+/* 三个谎言列表 */
+.lie-list{
+  margin:48px 0 36px;
+  max-width:780px;
+  display:flex;flex-direction:column;gap:18px;
+}
+.lie{
+  display:flex;
+  align-items:baseline;
+  gap:18px;
+  padding:18px 24px;
+  background:rgba(255,255,255,.02);
+  border-left:2px solid var(--line-3);
+  font-family:var(--serif);
+  font-size:clamp(17px, 1.6vw, 21px);
+  line-height:1.55;
+  color:var(--fg-2);
+  transition:border-color .3s, background .3s;
+}
+.lie:hover{
+  border-left-color:var(--data-2);
+  background:rgba(232,93,117,.04);
+}
+.lie-num{
+  flex:0 0 auto;
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--fg-4);
+  letter-spacing:.1em;
+  font-weight:500;
+}
+.lie-text{flex:1}
+.lie-text em{color:var(--fg);font-style:normal;font-weight:600}
+
+/* 判决句 */
+.verdict{
+  margin:40px 0 36px;
+  font-family:var(--serif);
+  font-size:clamp(28px, 3.4vw, 44px);
+  line-height:1.3;
+  font-weight:700;
+  color:var(--fg-2);
+  letter-spacing:-.01em;
+  max-width:780px;
+}
+.verdict strong{
+  color:var(--data-2);
+  font-weight:900;
+  /* 红色警告色，下方一道粗线 */
+  position:relative;
+  display:inline-block;
+}
+.verdict strong::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:-4px;
+  height:3px;
+  background:var(--data-2);
+  transform:scaleX(0);
+  transform-origin:left;
+  animation:verdictUnderline 1.2s ease .8s forwards;
+}
+@keyframes verdictUnderline{
+  to{transform:scaleX(1)}
+}
+
+.hero-toc{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  margin-bottom:60px;
+  max-width:920px;
+}
+@media(max-width:720px){.hero-toc{grid-template-columns:1fr}}
+.hero-toc a{
+  display:block;
+  padding:24px 22px;
+  background:var(--bg);
+  text-decoration:none;
+  color:var(--fg);
+  transition:background .2s ease;
+  position:relative;
+}
+.hero-toc a:hover{background:var(--bg-3)}
+.hero-toc a:hover .toc-num{color:var(--accent)}
+.hero-toc .toc-num{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  color:var(--fg-3);
+  margin-bottom:10px;
+  transition:color .2s ease;
+}
+.hero-toc .toc-title{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:22px;
+  letter-spacing:-.01em;
+  margin-bottom:6px;
+}
+.hero-toc .toc-host{
+  font-family:var(--hand);
+  font-size:18px;
+  color:var(--accent);
+  letter-spacing:0;
+  font-weight:500;
+}
+.hero-toc a::after{
+  content:"→";
+  position:absolute;top:24px;right:22px;
+  color:var(--fg-3);
+  transition:color .2s ease,transform .2s ease;
+}
+.hero-toc a:hover::after{color:var(--accent);transform:translateX(4px)}
+
+.scroll-hint{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  color:var(--fg-3);
+  display:flex;align-items:center;gap:10px;
+}
+.scroll-hint::before{
+  content:"";display:inline-block;
+  width:1px;height:24px;
+  background:linear-gradient(to bottom, var(--accent), transparent);
+  animation:scrollLine 1.6s ease-in-out infinite;
+}
+@keyframes scrollLine{
+  0%{transform:translateY(-8px);opacity:0}
+  50%{opacity:1}
+  100%{transform:translateY(8px);opacity:0}
+}
+
+/* ============== 向导：漫画头像 + 对话框 ============== */
+.host-bubble{
+  position:relative;
+  display:flex;
+  align-items:flex-start;
+  gap:18px;
+  margin:50px 0;
+  max-width:640px;
+}
+.host-bubble.right{margin-left:auto;flex-direction:row-reverse}
+
+.host-avatar{
+  flex:0 0 72px;
+  width:72px;
+  height:72px;
+  position:relative;
+}
+.host-avatar svg{
+  width:100%;height:100%;
+  display:block;
+  filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));
+}
+.host-avatar .avatar-name{
+  position:absolute;
+  bottom:-22px;left:50%;
+  transform:translateX(-50%);
+  font-family:var(--hand);
+  font-size:14px;
+  color:var(--fg-3);
+  white-space:nowrap;
+  letter-spacing:.02em;
+}
+
+.host-speech{
+  position:relative;
+  flex:1;
+  padding:18px 22px 16px;
+  background:var(--bg-3);
+  border:1.5px solid var(--line-3);
+  border-radius:2px;
+  font-family:var(--serif);
+  font-size:18px;
+  line-height:1.55;
+  color:var(--fg);
+  /* 故意不规则的圆角，手绘感 */
+  border-radius:6px 18px 6px 18px;
+}
+.host-bubble.right .host-speech{
+  border-radius:18px 6px 18px 6px;
+}
+.host-speech::before{
+  content:"";position:absolute;
+  left:-9px;top:22px;
+  width:14px;height:14px;
+  background:var(--bg-3);
+  border-left:1.5px solid var(--line-3);
+  border-bottom:1.5px solid var(--line-3);
+  transform:rotate(45deg);
+}
+.host-bubble.right .host-speech::before{
+  left:auto;right:-9px;
+  border-left:none;border-bottom:none;
+  border-right:1.5px solid var(--line-3);
+  border-top:1.5px solid var(--line-3);
+}
+.host-speech em{
+  color:var(--accent);
+  font-style:normal;
+  font-weight:600;
+}
+.host-speech strong{
+  color:var(--fg);
+  font-weight:700;
+}
+.host-speech .who{
+  display:block;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--fg-3);
+  letter-spacing:.1em;
+  margin-bottom:8px;
+  text-transform:uppercase;
+}
+.host-speech .silent{
+  font-family:var(--hand);
+  color:var(--fg-3);
+  font-style:italic;
+  font-size:16px;
+}
+
+/* 便签贴纸 */
+.sticky{
+  position:absolute;
+  padding:14px 18px;
+  background:var(--paper);
+  color:#2a2418;
+  font-family:var(--hand);
+  font-size:18px;
+  line-height:1.3;
+  box-shadow:4px 6px 12px rgba(0,0,0,.4);
+  transform:rotate(-3deg);
+  max-width:200px;
+  z-index:5;
+  letter-spacing:.02em;
+}
+.sticky.pink{background:var(--paper-pink);color:#3a1828}
+.sticky.cyan{background:var(--paper-cyan);color:#0a2a3a}
+.sticky.right{transform:rotate(2deg)}
+.sticky::before{
+  content:"";position:absolute;
+  top:-8px;left:50%;transform:translateX(-50%);
+  width:40px;height:14px;
+  background:rgba(255,255,255,.3);
+  border-radius:1px;
+}
+.sticky .arrow{
+  position:absolute;
+  font-family:var(--hand);
+  font-size:24px;
+  color:inherit;
+  font-weight:600;
+}
+
+/* ============== 章节通用 demo card ============== */
+.demo-card{
+  background:var(--bg-2);
+  border:1px solid var(--line-2);
+  margin:60px 0;
+  position:relative;
+}
+.demo-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 20px;
+  border-bottom:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  color:var(--fg-3);
+}
+.demo-header .left{display:flex;align-items:center;gap:14px}
+.demo-header .dots{display:flex;gap:6px}
+.demo-header .dots i{width:8px;height:8px;border-radius:50%;background:var(--line-3)}
+.demo-header .id{color:var(--fg-2)}
+.demo-body{padding:48px 40px;position:relative}
+@media(max-width:760px){.demo-body{padding:28px 18px}}
+
+/* ============== CH.01 复利 ============== */
+.compound-stage{
+  position:relative;
+  height:420px;
+  background:var(--bg);
+  border:1px solid var(--line);
+}
+@media(max-width:760px){.compound-stage{height:340px}}
+
+.cmp-svg{width:100%;height:100%;display:block}
+.cmp-grid line{stroke:var(--line);stroke-width:1}
+.cmp-axis{stroke:var(--line-2);stroke-width:1}
+.cmp-axis-label{font-family:"JetBrains Mono",monospace;font-size:10px;fill:var(--fg-3);letter-spacing:.06em}
+.cmp-curve-a{
+  fill:none;
+  stroke:var(--data-1);
+  stroke-width:2;
+}
+.cmp-curve-b{
+  fill:none;
+  stroke:var(--accent);
+  stroke-width:2.5;
+}
+.cmp-marker{r:6;stroke-width:2;stroke:var(--bg)}
+.cmp-marker-a{fill:var(--data-1)}
+.cmp-marker-b{fill:var(--accent)}
+.cmp-end-label{
+  font-family:"JetBrains Mono",monospace;
+  font-size:13px;
+  font-weight:500;
+}
+.cmp-end-label-a{fill:var(--data-1)}
+.cmp-end-label-b{fill:var(--accent)}
+
+.compound-controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border-top:1px solid var(--line);
+}
+@media(max-width:760px){.compound-controls{grid-template-columns:1fr}}
+.compound-controls .ctrl{padding:24px 28px;border-right:1px solid var(--line)}
+.compound-controls .ctrl:last-child{border-right:none}
+@media(max-width:760px){
+  .compound-controls .ctrl{border-right:none;border-bottom:1px solid var(--line)}
+  .compound-controls .ctrl:last-child{border-bottom:none}
+}
+.ctrl-label{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:14px;
+}
+.ctrl-label .name{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  color:var(--fg-3);
+}
+.ctrl-label .value{
+  font-family:var(--mono);
+  font-size:18px;
+  font-weight:500;
+  color:var(--accent);
+  letter-spacing:-.01em;
+}
+.ctrl-label .value.dim{color:var(--fg)}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:24px;
+  background:transparent;
+  cursor:none;
+}
+input[type=range]::-webkit-slider-runnable-track{height:1px;background:var(--line-3)}
+input[type=range]::-moz-range-track{height:1px;background:var(--line-3)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:14px;height:14px;
+  background:var(--accent);
+  border-radius:0;
+  margin-top:-6.5px;
+  transition:transform .15s ease;
+  cursor:none;
+}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.4)}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;background:var(--accent);
+  border-radius:0;border:none;cursor:none;
+}
+
+/* 反差大盘：开场比较 */
+.compare-cards{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:0;
+  margin:50px 0;
+  align-items:stretch;
+}
+@media(max-width:760px){.compare-cards{grid-template-columns:1fr;gap:14px}}
+.compare-cards .vs{
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--hand);
+  font-size:48px;
+  color:var(--accent);
+  padding:0 30px;
+  font-weight:700;
+}
+@media(max-width:760px){.compare-cards .vs{padding:14px 0;font-size:36px}}
+.compare-card{
+  padding:32px 28px;
+  background:var(--bg-2);
+  border:1.5px solid var(--line-2);
+  position:relative;
+}
+.compare-card.a{border-color:var(--data-1)}
+.compare-card.b{border-color:var(--accent)}
+.compare-card .role{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  margin-bottom:14px;
+  text-transform:uppercase;
+}
+.compare-card.a .role{color:var(--data-1)}
+.compare-card.b .role{color:var(--accent)}
+.compare-card .who{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:22px;
+  margin-bottom:18px;
+  color:var(--fg);
+}
+.compare-card .stat{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--fg-2);
+  line-height:1.9;
+}
+.compare-card .stat strong{color:var(--fg);font-weight:500}
+.compare-card .total{
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px dashed var(--line-2);
+  font-family:var(--mono);
+  font-size:14px;
+}
+.compare-card .total .label{color:var(--fg-3)}
+.compare-card .total .v{
+  display:block;
+  font-size:28px;
+  font-weight:600;
+  margin-top:4px;
+  color:var(--fg);
+}
+.compare-card.a .total .v{color:var(--data-1)}
+.compare-card.b .total .v{color:var(--accent)}
+.compare-card .guess-line{
+  margin-top:18px;
+  font-family:var(--hand);
+  font-size:20px;
+  color:var(--fg-3);
+}
+
+/* ============== 实时对比模块 ============== */
+.live-compare{
+  margin:50px 0 30px;
+  background:var(--bg-2);
+  border:1px solid var(--line-2);
+}
+.lc-header{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:18px 28px;
+  border-bottom:1px solid var(--line);
+  flex-wrap:wrap;gap:14px;
+}
+.lc-h-label{
+  font-family:var(--mono);
+  font-size:12px;letter-spacing:.06em;
+  color:var(--fg-2);
+}
+.lc-h-label strong{color:var(--accent);font-weight:600}
+.lc-h-sub{
+  font-family:var(--hand);
+  font-size:16px;
+  color:var(--fg-3);
+}
+.lc-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:var(--line);
+}
+@media(max-width:760px){.lc-grid{grid-template-columns:1fr}}
+.lc-col{
+  background:var(--bg-2);
+  padding:24px 28px;
+}
+.lc-col.a{border-top:2px solid var(--data-1)}
+.lc-col.b{border-top:2px solid var(--accent)}
+.lc-name{
+  font-family:var(--mono);
+  font-size:11px;letter-spacing:.06em;
+  margin-bottom:18px;
+  text-transform:uppercase;
+}
+.lc-col.a .lc-name{color:var(--data-1)}
+.lc-col.b .lc-name{color:var(--accent)}
+.lc-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:10px 0;
+  border-bottom:1px dashed var(--line);
+}
+.lc-row:last-child{border-bottom:none}
+.lc-row-label{
+  font-family:var(--serif);
+  font-size:14px;
+  color:var(--fg-3);
+}
+.lc-row-value{
+  font-size:20px;
+  font-weight:500;
+  color:var(--fg-2);
+  letter-spacing:-.01em;
+}
+.lc-row.asset .lc-row-label{color:var(--fg-2)}
+.lc-row.asset .lc-row-value{
+  font-size:28px;font-weight:600;
+  color:var(--fg);
+}
+.lc-col.a .lc-row.asset .lc-row-value{color:var(--data-1)}
+.lc-col.b .lc-row.asset .lc-row-value{color:var(--accent)}
+
+.lc-contrast{
+  padding:18px 28px;
+  border-top:1px solid var(--line);
+  background:var(--bg-3);
+}
+.lc-contrast-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:6px 0;
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--fg-2);
+}
+.lc-contrast-row .lc-c-key{
+  color:var(--fg-3);
+  letter-spacing:.06em;
+}
+.lc-contrast-row .lc-c-val{
+  font-size:15px;font-weight:500;
+}
+.lc-contrast-row.big{
+  padding:10px 0;
+}
+.lc-contrast-row.big .lc-c-val{
+  font-size:22px;font-weight:600;
+  letter-spacing:-.01em;
+}
+.lc-contrast-row.big .lc-c-val.accent{color:var(--accent)}
+.lc-verdict{
+  margin-top:12px;
+  padding:14px 16px;
+  background:var(--bg-2);
+  font-family:var(--serif);
+  font-size:15px;
+  line-height:1.6;
+  color:var(--fg-2);
+  border-left:2px solid var(--line-3);
+  transition:border-color .3s ease, color .3s ease;
+}
+.lc-verdict.flip{
+  border-left-color:var(--accent);
+  color:var(--fg);
+}
+.lc-verdict strong{color:var(--accent);font-weight:700}
+
+/* 中断模块 */
+.interrupt-block{
+  margin-top:60px;
+  padding:36px 40px;
+  background:var(--bg-2);
+  border-left:3px solid var(--accent);
+  position:relative;
+}
+.interrupt-block .micro{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  color:var(--accent);
+  margin-bottom:14px;
+}
+.interrupt-block h3{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:24px;
+  margin-bottom:18px;
+  color:var(--fg);
+  line-height:1.3;
+}
+.interrupt-controls{
+  display:flex;align-items:center;gap:16px;
+  margin-top:24px;flex-wrap:wrap;
+}
+.interrupt-controls .label{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:.06em;color:var(--fg-3);
+}
+.interrupt-controls .pill-group{
+  display:flex;border:1px solid var(--line-3);
+}
+.interrupt-controls .pill-group button{
+  padding:10px 16px;
+  font-family:var(--mono);font-size:12px;
+  color:var(--fg-2);
+  border-right:1px solid var(--line-3);
+  transition:all .2s ease;
+}
+.interrupt-controls .pill-group button:last-child{border-right:none}
+.interrupt-controls .pill-group button.active{
+  background:var(--accent);color:var(--bg);font-weight:600;
+}
+.interrupt-controls .pill-group button:hover:not(.active){background:var(--bg-3);color:var(--fg)}
+
+.loss-display{
+  margin-top:28px;
+  padding:24px 28px;
+  background:var(--bg-3);
+  border:1px solid var(--data-2);
+  position:relative;
+}
+.loss-display .label{
+  font-family:var(--mono);
+  font-size:11px;letter-spacing:.08em;
+  color:var(--fg-3);
+  margin-bottom:8px;
+}
+.loss-display .num{
+  font-family:var(--mono);
+  font-size:42px;
+  font-weight:600;
+  color:var(--data-2);
+  letter-spacing:-.02em;
+  line-height:1;
+}
+.loss-display .multi{
+  display:inline-block;
+  margin-left:16px;
+  font-family:var(--hand);
+  font-size:24px;
+  color:var(--accent);
+  vertical-align:middle;
+}
+.loss-display .note{
+  margin-top:14px;
+  font-family:var(--serif);
+  font-size:14px;
+  color:var(--fg-2);
+  line-height:1.6;
+}
+
+/* ============== CH.02 幂律 ============== */
+.ch-power{background:var(--bg-2)}
+
+.guess-box{
+  margin:60px 0;
+  background:var(--bg);
+  border:1px solid var(--line-2);
+  padding:48px 40px;
+  position:relative;
+}
+@media(max-width:760px){.guess-box{padding:32px 22px}}
+.guess-q{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:clamp(20px,2.4vw,28px);
+  line-height:1.4;
+  margin-bottom:32px;
+  color:var(--fg);
+}
+.guess-q .small{font-size:.7em;color:var(--fg-3);font-weight:400;display:block;margin-top:8px;font-family:var(--hand)}
+
+.guess-track{
+  position:relative;
+  margin:50px 0 24px;
+  padding:24px 0;
+}
+.guess-track .markers{
+  position:relative;
+  height:60px;
+  margin-bottom:8px;
+}
+.guess-marker{
+  position:absolute;
+  top:0;
+  transform:translateX(-50%);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--fg-3);
+  letter-spacing:.04em;
+  text-align:center;
+  white-space:nowrap;
+  display:flex;flex-direction:column;align-items:center;
+  pointer-events:none;
+  transition:opacity .4s ease, transform .4s ease;
+  opacity:0;
+}
+.guess-marker.show{opacity:1}
+.guess-marker .lbl{
+  margin-bottom:4px;
+  padding:2px 6px;
+  background:var(--bg-3);
+  border:1px solid var(--line-3);
+  font-weight:500;
+}
+.guess-marker.median .lbl{color:var(--accent);border-color:var(--accent)}
+.guess-marker.mean .lbl{color:var(--fg);border-color:var(--fg-2)}
+.guess-marker.you .lbl{color:var(--data-1);border-color:var(--data-1)}
+.guess-marker .pin{
+  width:1px;height:14px;background:var(--fg-3);
+}
+.guess-marker.median .pin{background:var(--accent)}
+.guess-marker.mean .pin{background:var(--fg-2)}
+.guess-marker.you .pin{background:var(--data-1)}
+
+.guess-readout{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:14px;
+}
+.guess-readout .name{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:.08em;color:var(--fg-3);
+}
+.guess-readout .value{
+  font-family:var(--mono);font-size:32px;font-weight:500;
+  color:var(--data-1);letter-spacing:-.02em;
+}
+.guess-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:20px}
+.btn-primary{
+  padding:14px 24px;
+  background:var(--accent);
+  color:var(--bg);
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:none;
+  transition:all .2s ease;
+}
+.btn-primary:hover{background:var(--accent-2);transform:translate(0,-1px)}
+.btn-ghost{
+  padding:14px 24px;
+  background:transparent;
+  border:1px solid var(--line-3);
+  color:var(--fg-2);
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:none;
+  transition:all .2s ease;
+}
+.btn-ghost:hover{border-color:var(--fg-2);color:var(--fg)}
+
+.gap-display{
+  margin-top:32px;
+  padding:24px 28px;
+  background:var(--bg-3);
+  border:1px solid var(--data-2);
+  display:none;
+}
+.gap-display.show{display:block;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.gap-display .row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-size:14px;
+  padding:6px 0;
+}
+.gap-display .row .k{color:var(--fg-3)}
+.gap-display .row .v{color:var(--fg);font-weight:500}
+.gap-display .gap-row{
+  margin-top:16px;padding-top:16px;
+  border-top:1px dashed var(--line-3);
+  font-family:var(--serif);
+  font-size:18px;
+}
+.gap-display .gap-row strong{color:var(--data-2);font-weight:700}
+
+/* 幂律放大可视化 */
+.zoom-stage{
+  margin:60px 0;
+  background:var(--bg);
+  border:1px solid var(--line);
+  position:relative;
+}
+.zoom-canvas{
+  height:380px;
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(to top, var(--bg-2), var(--bg));
+  border-bottom:1px solid var(--line);
+}
+@media(max-width:760px){.zoom-canvas{height:300px}}
+
+.zoom-bars{
+  position:absolute;left:40px;right:40px;bottom:40px;top:40px;
+  display:flex;align-items:flex-end;
+  pointer-events:none;
+  /* 允许柱子向上溢出以表达"爆出画面" */
+  overflow:visible;
+}
+.zoom-canvas::before{
+  /* 顶端渐隐，暗示"上面还有更多" */
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;height:60px;
+  background:linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+  z-index:2;
+  pointer-events:none;
+}
+.bar{
+  flex:1;
+  background:var(--data-1);
+  margin-right:1px;
+  position:relative;
+  transition:height .5s cubic-bezier(.2,.8,.3,1), background .3s;
+  min-height:1px;
+}
+.bar:last-child{margin-right:0}
+.bar.elite{background:var(--accent)}
+.bar.elite::after{
+  content:attr(data-name);
+  position:absolute;
+  top:-22px;left:50%;
+  transform:translateX(-50%);
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  color:var(--accent);
+  white-space:nowrap;
+  letter-spacing:.04em;
+  padding:2px 6px;
+  background:var(--bg-3);
+  border:1px solid var(--accent);
+  opacity:0;
+  transition:opacity .4s ease;
+}
+.bar.elite.named::after{opacity:1}
+
+.zoom-axis{
+  position:absolute;left:40px;right:40px;bottom:40px;height:1px;
+  background:var(--line-3);
+}
+.zoom-axis::before, .zoom-axis::after{
+  content:"";position:absolute;
+  bottom:0;width:1px;height:8px;background:var(--line-3);
+}
+.zoom-axis::before{left:0}
+.zoom-axis::after{right:0}
+
+.zoom-labels{
+  position:absolute;left:40px;right:40px;bottom:14px;
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;color:var(--fg-3);
+  letter-spacing:.06em;
+}
+.zoom-overlay-top{
+  position:absolute;top:14px;left:40px;right:40px;
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;color:var(--fg-3);
+  letter-spacing:.06em;
+}
+.zoom-overlay-top .scale-val{color:var(--accent);font-weight:600}
+
+.zoom-controls{padding:24px 28px}
+
+.zoom-final-msg{
+  padding:28px;
+  border-top:1px solid var(--line);
+  font-family:var(--serif);
+  font-size:16px;line-height:1.75;
+  color:var(--fg-2);
+  opacity:0;transition:opacity .8s ease;
+  pointer-events:none;
+}
+.zoom-final-msg.show{opacity:1;pointer-events:auto}
+.zoom-final-msg strong{color:var(--fg)}
+.zoom-final-msg em{color:var(--accent);font-style:normal}
+
+.power-twolists{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  margin:60px 0;
+}
+@media(max-width:760px){.power-twolists{grid-template-columns:1fr}}
+.power-twolists .col{padding:32px 28px;background:var(--bg)}
+.power-twolists .col-h{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:.08em;color:var(--fg-3);
+  margin-bottom:18px;
+  display:flex;align-items:center;gap:10px;
+}
+.power-twolists .col-h::before{
+  content:"";display:inline-block;
+  width:10px;height:10px;
+}
+.power-twolists .col-bell .col-h::before{background:var(--data-1);border-radius:50%}
+.power-twolists .col-power .col-h::before{background:var(--accent)}
+.power-twolists .title{
+  font-family:var(--serif);
+  font-weight:700;font-size:24px;
+  margin-bottom:18px;color:var(--fg);
+  line-height:1.3;
+}
+.power-twolists ul{list-style:none;padding:0}
+.power-twolists li{
+  font-family:var(--serif);font-size:16px;
+  padding:10px 0;
+  color:var(--fg-2);
+  border-bottom:1px dashed var(--line);
+  transition:all .25s ease;
+  display:flex;align-items:center;gap:10px;
+}
+.power-twolists li:last-child{border-bottom:none}
+.power-twolists li::before{
+  content:"";display:inline-block;
+  width:5px;height:5px;
+  background:var(--fg-4);
+}
+.power-twolists .col-power li{font-weight:500;color:var(--fg);cursor:none;justify-content:space-between}
+.power-twolists .col-power li::before{background:var(--accent)}
+.power-twolists .col-power li:hover{
+  color:var(--accent);
+  transform:translateX(4px);
+}
+.power-twolists .col-power li.active{
+  color:var(--accent);
+}
+.power-twolists .col-power li.active::before{
+  background:var(--fg);
+  width:8px;height:8px;
+}
+.li-arrow{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--fg-3);
+  margin-left:auto;
+  padding-left:14px;
+  transition:transform .2s ease, color .2s ease;
+}
+.power-twolists .col-power li:hover .li-arrow{
+  color:var(--accent);
+  transform:translateX(4px);
+}
+
+/* 幂律详情弹层 */
+.power-detail{
+  margin:30px 0 60px;
+  background:var(--bg);
+  border:1px solid var(--line-2);
+  min-height:200px;
+  position:relative;
+  overflow:hidden;
+}
+.pd-empty{
+  padding:60px 28px;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--fg-3);
+  letter-spacing:.04em;
+}
+.pd-empty-icon{
+  font-size:36px;color:var(--fg-4);
+  margin-bottom:18px;
+}
+.pd-empty.hide{display:none}
+
+.pd-card{
+  display:none;
+  padding:36px 32px;
+}
+.pd-card.show{display:block;animation:pdFadeUp .5s ease}
+@keyframes pdFadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pd-h{
+  display:flex;align-items:baseline;gap:14px;
+  margin-bottom:24px;flex-wrap:wrap;
+}
+.pd-tag{
+  padding:4px 10px;
+  background:var(--accent);
+  color:var(--bg);
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.pd-title{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:24px;
+  color:var(--fg);
+  letter-spacing:-.01em;
+}
+.pd-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  margin-bottom:24px;
+}
+@media(max-width:600px){.pd-stats{grid-template-columns:1fr}}
+.pd-stat{
+  background:var(--bg-2);
+  padding:22px;
+}
+.pd-stat .k{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--fg-3);
+  letter-spacing:.08em;
+  margin-bottom:8px;
+  text-transform:uppercase;
+}
+.pd-stat .v{
+  font-family:var(--mono);
+  font-size:26px;
+  font-weight:600;
+  color:var(--fg);
+  letter-spacing:-.02em;
+  line-height:1.2;
+}
+.pd-stat.you .v{color:var(--data-1)}
+.pd-stat.real .v{color:var(--accent)}
+.pd-stat .sub{
+  font-family:var(--serif);
+  font-size:13px;
+  color:var(--fg-3);
+  margin-top:8px;
+  line-height:1.4;
+}
+.pd-punch{
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:1.7;
+  color:var(--fg-2);
+  padding:18px 22px;
+  background:var(--bg-2);
+  border-left:2px solid var(--accent);
+}
+.pd-punch strong{color:var(--fg);font-weight:700}
+.pd-punch em{color:var(--accent);font-style:normal;font-weight:600}
+
+/* ============== CH.03 相变 ============== */
+.ch-phase{}
+
+.phase-stage{
+  margin:60px 0;
+  background:var(--bg);
+  border:1px solid var(--line);
+}
+.phase-canvas{
+  height:380px;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid var(--line);
+  background:radial-gradient(ellipse at 50% 100%, rgba(91,141,239,.08), transparent 70%);
+}
+@media(max-width:760px){.phase-canvas{height:300px}}
+
+.phase-canvas.steam{
+  background:radial-gradient(ellipse at 50% 50%, rgba(245,165,36,.18), transparent 70%);
+  animation:none;
+  transition:background 1.2s ease;
+}
+.phase-canvas.boiling{
+  animation:phaseShake .5s steps(8) 1;
+}
+@keyframes phaseShake{
+  0%{transform:translate(0,0)}
+  12%{transform:translate(-7px,5px)}
+  25%{transform:translate(7px,-5px)}
+  37%{transform:translate(-6px,7px)}
+  50%{transform:translate(8px,-6px)}
+  62%{transform:translate(-5px,4px)}
+  75%{transform:translate(5px,-3px)}
+  87%{transform:translate(-3px,2px)}
+  100%{transform:translate(0,0)}
+}
+
+/* 白闪 */
+.phase-flash{
+  position:absolute;inset:0;
+  background:#fff;
+  opacity:0;
+  pointer-events:none;
+  z-index:8;
+  mix-blend-mode:screen;
+}
+.phase-flash.fire{
+  animation:phaseFlash .55s ease-out 1;
+}
+@keyframes phaseFlash{
+  0%{opacity:0}
+  8%{opacity:.95}
+  20%{opacity:.7}
+  100%{opacity:0}
+}
+
+/* 速度线 / 光带 */
+.phase-speedline{
+  position:absolute;
+  top:50%; left:-30%;
+  width:160%; height:6px;
+  background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.9) 45%, rgba(255,255,255,1) 50%, rgba(255,255,255,.9) 55%, transparent 100%);
+  transform:translateY(-50%) rotate(-12deg) scaleX(0);
+  transform-origin:left center;
+  pointer-events:none;
+  z-index:7;
+  opacity:0;
+  filter:blur(2px);
+}
+.phase-speedline.fire{
+  animation:phaseSpeedline .35s ease-out 1;
+}
+@keyframes phaseSpeedline{
+  0%{transform:translateY(-50%) rotate(-12deg) scaleX(0); opacity:0}
+  20%{opacity:1}
+  100%{transform:translateY(-50%) rotate(-12deg) scaleX(1); opacity:0}
+}
+
+/* 温度数字脉冲 */
+.thermo .temp.pulse{
+  animation:tempPulse .6s cubic-bezier(.2,.7,.3,1.4) 1;
+}
+@keyframes tempPulse{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.45)}
+  60%{transform:scale(.95)}
+  100%{transform:scale(1)}
+}
+
+.particles{position:absolute;inset:0;pointer-events:none;z-index:3}
+.particle{
+  position:absolute;
+  width:4px;height:4px;
+  background:var(--data-1);
+  border-radius:50%;
+  transition:transform .5s cubic-bezier(.4,.1,.3,1.4), background .4s;
+  will-change:transform;
+}
+.particle.exploding{
+  /* 用 CSS 变量驱动每个粒子的爆炸方向 */
+  animation:particleExplode .9s cubic-bezier(.15,.8,.4,1) forwards;
+}
+@keyframes particleExplode{
+  0%{
+    transform:translate(0,0) scale(1);
+    background:var(--data-1);
+    opacity:1;
+  }
+  20%{
+    background:#fff;
+    opacity:1;
+    transform:translate(calc(var(--ex,0px) * .4), calc(var(--ey,0px) * .4)) scale(1.5);
+  }
+  60%{
+    background:var(--accent);
+    opacity:.9;
+    transform:translate(calc(var(--ex,0px) * .85), calc(var(--ey,0px) * .85)) scale(1);
+  }
+  100%{
+    transform:translate(var(--ex,0px), var(--ey,0px)) scale(.6);
+    background:var(--accent-2);
+    opacity:.3;
+  }
+}
+.phase-canvas.steam .particle.exploding{
+  animation:none;
+  background:var(--accent);
+  width:3px;height:3px;
+  opacity:.6;
+}
+.phase-canvas.steam .particle:not(.exploding){
+  background:var(--accent);
+  width:3px;height:3px;
+  animation:steamFloat 4s ease-in-out infinite;
+}
+@keyframes steamFloat{
+  0%,100%{transform:translate(var(--tx,0),var(--ty,0))}
+  50%{transform:translate(calc(var(--tx,0px) + 6px), calc(var(--ty,0px) - 14px))}
+}
+
+.thermo{
+  position:absolute;top:24px;right:28px;
+  font-family:var(--mono);
+  font-size:11px;letter-spacing:.06em;
+  color:var(--fg-3);
+  text-align:right;
+  pointer-events:none;
+}
+.thermo .temp{
+  font-size:54px;font-weight:600;
+  color:var(--accent);letter-spacing:-.03em;
+  display:block;line-height:1;
+  transition:color .3s;
+}
+.phase-canvas.steam .thermo .temp{color:var(--accent-2)}
+.thermo .unit{font-size:18px;color:var(--fg-3);margin-left:2px}
+.thermo .state{
+  margin-top:8px;
+  font-size:12px;
+  text-transform:uppercase;
+  font-weight:500;
+  letter-spacing:.1em;
+}
+.thermo .state.water{color:var(--data-1)}
+.thermo .state.steam{color:var(--accent)}
+
+.phase-counter{
+  position:absolute;top:24px;left:28px;
+  font-family:var(--mono);
+  font-size:11px;letter-spacing:.06em;
+  color:var(--fg-3);
+  pointer-events:none;
+}
+.phase-counter .clicks{
+  font-size:28px;color:var(--fg);font-weight:600;
+  display:block;margin-top:2px;
+}
+
+.phase-warning{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-family:var(--hand);
+  font-size:32px;
+  color:var(--accent);
+  text-align:center;
+  background:var(--bg-3);
+  border:2px solid var(--accent);
+  padding:20px 32px;
+  box-shadow:6px 8px 0 var(--accent-dim);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s ease;
+  white-space:nowrap;
+  z-index:5;
+}
+.phase-warning.show{
+  opacity:1;
+  animation:warnBounce .5s ease;
+}
+@keyframes warnBounce{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(-5deg)}
+  60%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(2deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-2deg)}
+}
+
+.phase-controls{
+  padding:32px 28px;
+  display:flex;flex-direction:column;gap:20px;
+}
+.phase-btns{
+  display:flex;gap:12px;flex-wrap:wrap;
+}
+.btn-heat{
+  padding:18px 28px;
+  background:var(--bg-3);
+  border:1.5px solid var(--line-3);
+  color:var(--fg);
+  font-family:var(--mono);
+  font-size:13px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+  cursor:none;
+  transition:all .15s ease;
+  position:relative;
+  flex:0 0 auto;
+}
+.btn-heat:hover{background:var(--bg-4);border-color:var(--fg-3)}
+.btn-heat:active{transform:translate(0,1px)}
+.btn-heat.primary{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:var(--bg);
+}
+.btn-heat.primary:hover{background:var(--accent-2)}
+.btn-heat.primary.glow{
+  animation:heatGlow 1.2s ease-in-out infinite;
+}
+@keyframes heatGlow{
+  0%,100%{box-shadow:0 0 0 rgba(245,165,36,0)}
+  50%{box-shadow:0 0 28px rgba(245,165,36,.5)}
+}
+.btn-heat:disabled{
+  background:var(--line-2);color:var(--fg-3);
+  border-color:var(--line-3);
+  cursor:not-allowed;
+  pointer-events:none;
+}
+
+.phase-info{
+  font-family:var(--serif);
+  font-size:14px;color:var(--fg-3);
+  line-height:1.6;
+  flex:1;
+}
+.phase-info em{color:var(--accent);font-style:normal;font-weight:500}
+
+.phase-extend{
+  margin-top:50px;
+  background:var(--bg-2);
+  border:1px solid var(--line-2);
+  display:none;
+}
+.phase-extend.show{display:block;animation:fadeUp .8s ease}
+.phase-extend-h{
+  padding:20px 28px;
+  border-bottom:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:11px;letter-spacing:.08em;
+  color:var(--accent);
+  display:flex;align-items:center;gap:10px;
+}
+.phase-extend-h::before{
+  content:"";width:8px;height:8px;background:var(--accent);
+  animation:pulse 2s ease-in-out infinite;
+}
+.phase-extend-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--line);
+}
+@media(max-width:760px){.phase-extend-grid{grid-template-columns:1fr 1fr}}
+.phase-extend-grid .pe{
+  background:var(--bg-2);padding:24px;
+  cursor:none;
+  transition:background .2s ease;
+}
+.phase-extend-grid .pe:hover{background:var(--bg-3)}
+.phase-extend-grid .pe.active{background:var(--bg-3);box-shadow:inset 0 0 0 1px var(--accent)}
+.phase-extend-grid .pe.active .pe-num{color:var(--accent)}
+.pe-num{
+  font-family:var(--mono);
+  font-size:10px;letter-spacing:.08em;
+  color:var(--fg-3);
+  margin-bottom:10px;
+  transition:color .2s ease;
+}
+.pe-title{
+  font-family:var(--serif);
+  font-weight:700;font-size:18px;
+  margin-bottom:6px;color:var(--fg);
+  line-height:1.3;
+}
+.pe-sub{
+  font-family:var(--serif);
+  font-size:13px;color:var(--fg-3);
+  line-height:1.5;
+}
+.phase-extend-detail{
+  padding:32px 28px;
+  border-top:1px solid var(--line);
+  font-family:var(--serif);
+  font-size:17px;line-height:1.75;
+  color:var(--fg-2);
+  min-height:80px;
+}
+.phase-extend-detail.empty{color:var(--fg-3);font-size:13px;font-family:var(--mono)}
+.phase-extend-detail strong{color:var(--fg)}
+.phase-extend-detail em{color:var(--accent);font-style:normal}
+
+/* ============== CH.04 同构 终章 ============== */
+.ch-iso{padding:200px 6vw}
+@media(max-width:760px){.ch-iso{padding:120px 5vw}}
+
+.iso-overlay{
+  margin:80px 0;
+  background:var(--bg-2);
+  border:1px solid var(--line-2);
+  padding:60px 40px 40px;
+  position:relative;
+}
+@media(max-width:760px){.iso-overlay{padding:40px 22px}}
+.iso-svg{width:100%;height:auto;display:block;max-height:420px}
+.iso-grid line{stroke:var(--line);stroke-width:1}
+.iso-axis{stroke:var(--line-2);stroke-width:1}
+.iso-c1,.iso-c2,.iso-c3{
+  fill:none;
+  stroke-width:2.5;
+  stroke-dasharray:1500;
+  stroke-dashoffset:1500;
+  transition:stroke-dashoffset 1.4s ease;
+}
+.iso-c1{stroke:var(--data-1)}
+.iso-c2{stroke:var(--accent)}
+.iso-c3{stroke:var(--data-3)}
+.iso-overlay.in .iso-c1{stroke-dashoffset:0;transition-delay:.2s}
+.iso-overlay.in .iso-c2{stroke-dashoffset:0;transition-delay:.5s}
+.iso-overlay.in .iso-c3{stroke-dashoffset:0;transition-delay:.8s}
+.iso-legend{
+  display:flex;justify-content:center;gap:32px;
+  margin-top:24px;flex-wrap:wrap;
+}
+.iso-legend .item{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:.06em;color:var(--fg-3);
+  display:flex;align-items:center;gap:8px;
+}
+.iso-legend .item::before{content:"";width:14px;height:2px}
+.iso-legend .item.c1::before{background:var(--data-1)}
+.iso-legend .item.c2::before{background:var(--accent)}
+.iso-legend .item.c3::before{background:var(--data-3)}
+
+.iso-quote{
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:clamp(22px,2.6vw,32px);
+  line-height:1.5;
+  max-width:760px;
+  margin:60px 0 30px;
+  color:var(--fg-2);
+  letter-spacing:-.005em;
+}
+.iso-quote em{color:var(--accent);font-style:normal;font-weight:500}
+.iso-quote strong{color:var(--fg);font-weight:600}
+.iso-quote .lin{
+  text-decoration:line-through;
+  text-decoration-color:var(--data-2);
+  text-decoration-thickness:2px;
+  color:var(--fg-3);
+}
+
+/* ============== FOOTER ============== */
+footer{
+  border-top:1px solid var(--line);
+  padding:60px 6vw;
+  background:var(--bg-2);
+}
+.foot-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:40px;max-width:1100px;
+}
+@media(max-width:760px){.foot-grid{grid-template-columns:1fr}}
+.foot-meta{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:.06em;color:var(--fg-3);
+  line-height:1.9;
+}
+.foot-meta .label{color:var(--fg-2)}
+.foot-meta .v{color:var(--accent)}
+.foot-quote{
+  font-family:var(--serif);
+  font-size:18px;line-height:1.7;
+  color:var(--fg-2);font-style:italic;
+}
+.foot-quote .author{
+  display:block;margin-top:14px;
+  font-family:var(--mono);font-size:11px;
+  font-style:normal;color:var(--fg-3);letter-spacing:.06em;
+}
+.foot-bottom{
+  margin-top:60px;padding-top:24px;
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;
+  letter-spacing:.08em;color:var(--fg-4);
+  flex-wrap:wrap;gap:14px;
+}
+.foot-bottom a{color:var(--fg-3);text-decoration:none}
+.foot-bottom a:hover{color:var(--accent)}
+
+/* utility */
+.spacer-l{height:60px}
+.spacer-m{height:40px}
+.spacer-s{height:24px}
+
+</style>
+</head>
+<body>
+
+<!-- ===== 自定义光标 ===== -->
+<div class="cursor-glow" id="curGlow"></div>
+<div class="cursor-dot" id="curDot"></div>
+<div class="cursor-label" id="curLabel"></div>
+
+<!-- ===== STATUS BAR ===== -->
+<div class="statusbar">
+  <div class="left">
+    <span class="dot"></span>
+    <span>MENTAL_MODELS.OS</span>
+    <span class="sep hide-mobile">/</span>
+    <span class="hide-mobile">VOL.001 · 非线性</span>
+  </div>
+  <div class="right">
+    <span class="hide-mobile">3 / 100</span>
+    <span class="sep hide-mobile">/</span>
+    <span class="live">RUNNING</span>
+  </div>
+</div>
+<div class="progress" id="prog"></div>
+
+<!-- ============================================================
+     名人头像 SVG defs（复用） — 以剪影方式绘制，但保留招牌特征
+     ============================================================ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- BUFFETT: 圆框眼镜 + 灰白头发后梳 + 爽朗笑容 -->
+    <symbol id="avatar-buffett" viewBox="0 0 80 80">
+      <rect width="80" height="80" fill="#1d2530"/>
+      <!-- 头型 -->
+      <ellipse cx="40" cy="38" rx="22" ry="26" fill="#e8d5b0"/>
+      <!-- 头发：稀疏花白后梳 -->
+      <path d="M 18 28 Q 22 14 40 14 Q 58 14 62 28 Q 60 18 50 16 Q 40 13 30 16 Q 22 19 18 28 Z" fill="#d4d4d4"/>
+      <!-- 圆框眼镜 -->
+      <circle cx="30" cy="38" r="7" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>
+      <circle cx="50" cy="38" r="7" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>
+      <line x1="37" y1="38" x2="43" y2="38" stroke="#1a1a1a" stroke-width="1.5"/>
+      <!-- 眼睛 -->
+      <circle cx="30" cy="38" r="1.5" fill="#1a1a1a"/>
+      <circle cx="50" cy="38" r="1.5" fill="#1a1a1a"/>
+      <!-- 鼻 -->
+      <path d="M 40 42 L 38 50 L 42 50" fill="none" stroke="#a8927a" stroke-width="1" stroke-linejoin="round"/>
+      <!-- 微笑 -->
+      <path d="M 32 56 Q 40 60 48 56" fill="none" stroke="#7a3a2a" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- 西装领 -->
+      <path d="M 14 80 L 26 64 L 40 70 L 54 64 L 66 80 Z" fill="#2a2a2a"/>
+      <!-- 领带 -->
+      <path d="M 36 70 L 44 70 L 42 80 L 38 80 Z" fill="#c0392b"/>
+    </symbol>
+
+    <!-- TALEB: 大胡子 + 秃顶 + 蹙眉 -->
+    <symbol id="avatar-taleb" viewBox="0 0 80 80">
+      <rect width="80" height="80" fill="#1d2530"/>
+      <!-- 头 -->
+      <ellipse cx="40" cy="36" rx="21" ry="24" fill="#d8b896"/>
+      <!-- 秃顶（不画头发顶部）-->
+      <!-- 鬓角 -->
+      <path d="M 19 36 Q 16 30 19 24 Q 22 22 23 28 L 23 42 Z" fill="#2a2a2a"/>
+      <path d="M 61 36 Q 64 30 61 24 Q 58 22 57 28 L 57 42 Z" fill="#2a2a2a"/>
+      <!-- 浓眉（皱起）-->
+      <path d="M 24 32 L 34 30" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M 46 30 L 56 32" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- 眼睛（眯起）-->
+      <path d="M 27 38 Q 30 36 33 38" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M 47 38 Q 50 36 53 38" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- 鼻子 -->
+      <path d="M 40 40 L 38 48 L 42 48" fill="none" stroke="#a8927a" stroke-width="1" stroke-linejoin="round"/>
+      <!-- 大胡子 -->
+      <path d="M 22 50 Q 22 62 30 66 Q 40 72 50 66 Q 58 62 58 50 Q 50 56 40 56 Q 30 56 22 50 Z" fill="#3a3a3a"/>
+      <!-- 嘴（被胡子半遮）-->
+      <path d="M 35 54 L 45 54" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
+      <!-- 衣领 -->
+      <path d="M 14 80 L 26 64 L 54 64 L 66 80 Z" fill="#2a2a2a"/>
+    </symbol>
+
+    <!-- MUSK: 短发 + 微笑 + 看起来要搞事的眼神 -->
+    <symbol id="avatar-musk" viewBox="0 0 80 80">
+      <rect width="80" height="80" fill="#1d2530"/>
+      <!-- 头 -->
+      <ellipse cx="40" cy="38" rx="21" ry="25" fill="#dcc5a8"/>
+      <!-- 短发 -->
+      <path d="M 19 26 Q 22 14 40 13 Q 58 14 61 26 Q 60 22 56 20 Q 50 16 40 16 Q 30 16 24 20 Q 20 22 19 26 Z" fill="#5a4030"/>
+      <!-- 鬓角 -->
+      <path d="M 21 30 L 22 38 L 21 30" stroke="#5a4030" stroke-width="2"/>
+      <!-- 眉毛 -->
+      <path d="M 25 31 L 33 30" stroke="#3a2820" stroke-width="2" stroke-linecap="round"/>
+      <path d="M 47 30 L 55 31" stroke="#3a2820" stroke-width="2" stroke-linecap="round"/>
+      <!-- 眼睛 -->
+      <ellipse cx="30" cy="38" rx="2.5" ry="1.8" fill="#1a1a1a"/>
+      <ellipse cx="50" cy="38" rx="2.5" ry="1.8" fill="#1a1a1a"/>
+      <!-- 鼻 -->
+      <path d="M 40 41 L 38 50 L 42 50" fill="none" stroke="#a8927a" stroke-width="1" stroke-linejoin="round"/>
+      <!-- 微笑（一边翘起的，狡黠感）-->
+      <path d="M 32 56 Q 40 60 48 55" fill="none" stroke="#7a3a2a" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- 衣 -->
+      <path d="M 14 80 L 28 64 L 52 64 L 66 80 Z" fill="#1a1a1a"/>
+    </symbol>
+
+    <!-- MUNGER: 圆框眼镜 + 极度严肃 + 老态 -->
+    <symbol id="avatar-munger" viewBox="0 0 80 80">
+      <rect width="80" height="80" fill="#1d2530"/>
+      <!-- 头型（更长，老人感）-->
+      <ellipse cx="40" cy="38" rx="22" ry="27" fill="#e0c8a8"/>
+      <!-- 老人的稀疏白发 -->
+      <path d="M 19 26 Q 22 16 40 15 Q 58 16 61 26 Q 56 22 50 20 Q 40 18 30 20 Q 24 22 19 26 Z" fill="#e8e8e8"/>
+      <!-- 招牌大圆框眼镜 -->
+      <circle cx="29" cy="38" r="9" fill="rgba(255,255,255,.05)" stroke="#1a1a1a" stroke-width="2"/>
+      <circle cx="51" cy="38" r="9" fill="rgba(255,255,255,.05)" stroke="#1a1a1a" stroke-width="2"/>
+      <line x1="38" y1="38" x2="42" y2="38" stroke="#1a1a1a" stroke-width="2"/>
+      <!-- 镜架横梁 -->
+      <line x1="20" y1="38" x2="22" y2="38" stroke="#1a1a1a" stroke-width="2"/>
+      <line x1="58" y1="38" x2="60" y2="38" stroke="#1a1a1a" stroke-width="2"/>
+      <!-- 眼睛（透过厚镜片）-->
+      <circle cx="29" cy="38" r="1.8" fill="#1a1a1a"/>
+      <circle cx="51" cy="38" r="1.8" fill="#1a1a1a"/>
+      <!-- 鼻 -->
+      <path d="M 40 44 L 37 53 L 43 53" fill="none" stroke="#a08068" stroke-width="1" stroke-linejoin="round"/>
+      <!-- 严肃紧抿嘴角 -->
+      <line x1="33" y1="58" x2="47" y2="58" stroke="#5a3020" stroke-width="1.8" stroke-linecap="round"/>
+      <!-- 法令纹（老人感）-->
+      <path d="M 33 50 Q 32 55 33 60" stroke="#a08068" stroke-width="0.8" fill="none"/>
+      <path d="M 47 50 Q 48 55 47 60" stroke="#a08068" stroke-width="0.8" fill="none"/>
+      <!-- 西装 + 领结 -->
+      <path d="M 12 80 L 26 64 L 54 64 L 68 80 Z" fill="#1a1a1a"/>
+      <!-- 领结/红色领带 -->
+      <path d="M 36 64 L 44 64 L 42 76 L 38 76 Z" fill="#a02a2a"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
+  <div class="hero-meta">
+    <span class="tag">VOL.001</span>
+    <span class="tag active">非线性 / NON-LINEARITY</span>
+    <span class="tag">3 模型</span>
+  </div>
+
+  <h1>
+    <span class="quiet">你的大脑</span><br>
+    <span class="strong">骗了你</span><span class="accent">一辈子</span>。
+    <span class="en">Your brain has been lying to you.</span>
+  </h1>
+
+  <div class="lie-list">
+    <div class="lie reveal">
+      <span class="lie-num">01</span>
+      <span class="lie-text">它告诉你：今年存一万，明年又存一万，你就有<em>两万</em>。</span>
+    </div>
+    <div class="lie reveal">
+      <span class="lie-num">02</span>
+      <span class="lie-text">它告诉你：你眼里的社会，<em>就是这个世界的样子</em>。</span>
+    </div>
+    <div class="lie reveal">
+      <span class="lie-num">03</span>
+      <span class="lie-text">它告诉你：今天都没遇到危险，<em>明天也肯定不会</em>。</span>
+    </div>
+  </div>
+
+  <p class="verdict reveal">
+    这三句话——<strong>全错。错得很离谱。</strong>
+  </p>
+
+  <p class="sub reveal">
+  错到你这辈子大部分的<em>意外、痛苦、错过的机会</em>——<br>
+  都是因为信了它们。
+  <br><br>
+  我们用 <em>7 分钟</em>，证明给你看。
+  </p>
+
+  <!-- 芒格开场 -->
+  <div class="host-bubble reveal">
+    <div class="host-avatar">
+      <svg><use href="#avatar-munger"/></svg>
+      <div class="avatar-name">查理·芒格</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">CHARLIE MUNGER · 99 岁</span>
+      我活了 99 年——<br>
+      看过太多聪明人，被这<em>三个谎言</em>毁掉一生。
+      <br><br>
+      你想看看它们怎么骗你的吗？
+    </div>
+  </div>
+
+  <div class="hero-toc">
+    <a href="#ch1">
+      <div class="toc-num">CH.01 / 时间维度</div>
+      <div class="toc-title">复利</div>
+      <div class="toc-host">本章向导：沃伦·巴菲特</div>
+    </a>
+    <a href="#ch2">
+      <div class="toc-num">CH.02 / 分布维度</div>
+      <div class="toc-title">幂律</div>
+      <div class="toc-host">本章向导：纳西姆·塔勒布</div>
+    </a>
+    <a href="#ch3">
+      <div class="toc-num">CH.03 / 临界维度</div>
+      <div class="toc-title">相变</div>
+      <div class="toc-host">本章向导：埃隆·马斯克</div>
+    </a>
+  </div>
+
+  <div class="scroll-hint">向下滚动 · SCROLL TO BEGIN</div>
+</section>
+
+<!-- ============================================================
+     CH.01 复利
+     ============================================================ -->
+<section class="ch-compound" id="ch1">
+  <div class="chapter-meta reveal">
+    <span class="num">CH.01</span>
+    <span class="bar"></span>
+    <span>时间维度的非线性</span>
+    <span class="bar"></span>
+    <span style="color:var(--accent)">向导 · 巴菲特</span>
+  </div>
+
+  <h2 class="h-display reveal">复利不是<em>多投</em>，<br>是<em>不被打断</em>。</h2>
+
+  <!-- 反差大盘：开场设置预期 -->
+  <div class="compare-cards reveal">
+    <div class="compare-card a">
+      <div class="role">PLAYER A · 晚到的勤奋者</div>
+      <div class="who">老李</div>
+      <div class="stat">
+        <strong>35 岁</strong>开始投资<br>
+        每年存 <strong>1 万</strong><br>
+        <strong>不间断</strong>投资 <strong>30 年</strong><br>
+        到 65 岁退休
+      </div>
+      <div class="total">
+        <span class="label">累计投入本金</span>
+        <span class="v">¥30 万</span>
+      </div>
+      <div class="guess-line">三十年坚持 · 投入大</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="compare-card b">
+      <div class="role">PLAYER B · 早起的偷懒者</div>
+      <div class="who">小王</div>
+      <div class="stat">
+        <strong>25 岁</strong>开始投资<br>
+        每年存 <strong>1 万</strong><br>
+        只投 <strong>10 年</strong>，35 岁停手<br>
+        本金继续滚 30 年
+      </div>
+      <div class="total">
+        <span class="label">累计投入本金</span>
+        <span class="v">¥10 万</span>
+      </div>
+      <div class="guess-line">十年偷懒 · 投入小</div>
+    </div>
+  </div>
+
+  <!-- 巴菲特出场，预设悬念 -->
+  <div class="host-bubble right reveal">
+    <div class="host-avatar">
+      <svg><use href="#avatar-buffett"/></svg>
+      <div class="avatar-name">沃伦·巴菲特</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">WARREN BUFFETT</span>
+      老李投了 <em>30 万</em>，小王只投了 <em>10 万</em>。
+      <br>
+      你猜，65 岁退休那天——<strong>谁拿得多？</strong>
+      <br><br>
+      <span class="silent">先选一个年化回报率。然后把"年龄"滑杆，从 25 岁，慢慢推到 65 岁。</span>
+    </div>
+  </div>
+
+  <!-- 主交互：滑杆 + 双曲线 -->
+  <div class="demo-card">
+    <div class="demo-header">
+      <div class="left">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="id">demo_01.compound · two_lives_race.svg</span>
+      </div>
+      <span id="cmpAgeDisplay">AGE: 25</span>
+    </div>
+    <div class="demo-body">
+      <div class="compound-stage">
+        <svg class="cmp-svg" viewBox="0 0 800 400" preserveAspectRatio="none">
+          <g class="cmp-grid" id="cmpGrid"></g>
+          <line class="cmp-axis" x1="60" y1="360" x2="780" y2="360"/>
+          <line class="cmp-axis" x1="60" y1="20" x2="60" y2="360"/>
+
+          <text class="cmp-axis-label" x="60" y="385">25 岁</text>
+          <text class="cmp-axis-label" x="245" y="385" text-anchor="middle">35 岁 (B 停)</text>
+          <text class="cmp-axis-label" x="425" y="385" text-anchor="middle">45 岁</text>
+          <text class="cmp-axis-label" x="780" y="385" text-anchor="end">65 岁</text>
+
+          <path class="cmp-curve-a" id="curveA" d=""/>
+          <path class="cmp-curve-b" id="curveB" d=""/>
+
+          <circle class="cmp-marker cmp-marker-a" id="markA" cx="60" cy="360"/>
+          <circle class="cmp-marker cmp-marker-b" id="markB" cx="60" cy="360"/>
+
+          <text class="cmp-end-label cmp-end-label-a" id="labelA" x="0" y="0"></text>
+          <text class="cmp-end-label cmp-end-label-b" id="labelB" x="0" y="0"></text>
+        </svg>
+      </div>
+
+      <div class="compound-controls">
+        <div class="ctrl">
+          <div class="ctrl-label">
+            <span class="name">年龄 / AGE</span>
+            <span class="value" id="ageVal">25</span>
+          </div>
+          <input type="range" id="ageSlider" min="25" max="65" value="25" step="1">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-label">
+            <span class="name">年化回报 / RATE</span>
+            <span class="value dim" id="rateVal">10%</span>
+          </div>
+          <input type="range" id="rateSlider" min="7" max="15" value="10" step="1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 实时对比模块：本金 vs 资产 -->
+  <div class="live-compare reveal">
+    <div class="lc-header">
+      <span class="lc-h-label">▸ 实时对比 · 当前年龄 <strong id="lcAge">25</strong> 岁</span>
+      <span class="lc-h-sub">拖动上方"年龄"滑杆，下方数字会跟着变</span>
+    </div>
+    <div class="lc-grid">
+      <!-- 老李 -->
+      <div class="lc-col a">
+        <div class="lc-name">老李 · 35 岁才开始</div>
+        <div class="lc-row">
+          <div class="lc-row-label">已投入本金</div>
+          <div class="lc-row-value mono" id="lcAInv">¥0</div>
+        </div>
+        <div class="lc-row asset">
+          <div class="lc-row-label">资产滚出来的真实数字</div>
+          <div class="lc-row-value mono" id="lcAAsset">¥0</div>
+        </div>
+      </div>
+      <!-- 小王 -->
+      <div class="lc-col b">
+        <div class="lc-name">小王 · 25 岁就开始 / 35 岁停手</div>
+        <div class="lc-row">
+          <div class="lc-row-label">已投入本金</div>
+          <div class="lc-row-value mono" id="lcBInv">¥0</div>
+        </div>
+        <div class="lc-row asset">
+          <div class="lc-row-label">资产滚出来的真实数字</div>
+          <div class="lc-row-value mono" id="lcBAsset">¥0</div>
+        </div>
+      </div>
+    </div>
+    <!-- 反差行 -->
+    <div class="lc-contrast">
+      <div class="lc-contrast-row">
+        <span class="lc-c-key">本金对比</span>
+        <span class="lc-c-val" id="lcInvRatio">老李 0 ¥ : 小王 0 ¥</span>
+      </div>
+      <div class="lc-contrast-row big">
+        <span class="lc-c-key">资产对比</span>
+        <span class="lc-c-val accent" id="lcAssetRatio">— 老李 vs 小王 —</span>
+      </div>
+      <div class="lc-verdict" id="lcVerdict">▸ 拖动滑杆开始</div>
+    </div>
+  </div>
+
+  <!-- 巴菲特反转 -->
+  <div class="host-bubble reveal">
+    <div class="host-avatar">
+      <svg><use href="#avatar-buffett"/></svg>
+      <div class="avatar-name">沃伦·巴菲特</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">WARREN BUFFETT · 揭晓</span>
+      多投了 <em>20 万</em> 的老李，亏得最多的——<br>
+      <strong>不是钱。</strong>
+      <br><br>
+      是他迟到的<em>那 10 年</em>。
+    </div>
+  </div>
+
+  <!-- 中断模块 -->
+  <div class="interrupt-block reveal">
+    <div class="micro">EXP.01.B · 中断成本</div>
+    <h3>那如果小王在那 10 年里<em style="color:var(--accent);font-style:normal">中断了 1 年</em>呢？</h3>
+    <p class="body-text" style="margin-bottom:0">小王不间断的最终结果是 <span class="mono" style="color:var(--accent)" id="bBaseline">¥0</span>。
+    现在选一年让他暂停：</p>
+
+    <div class="interrupt-controls">
+      <span class="label">中断于第</span>
+      <div class="pill-group" id="interruptPills">
+        <button data-y="1" class="active">1 年</button>
+        <button data-y="3">3 年</button>
+        <button data-y="6">6 年</button>
+        <button data-y="10">10 年</button>
+      </div>
+      <span class="label">年</span>
+    </div>
+
+    <div class="loss-display">
+      <div class="label">→ 暂停 1 年 · 损失</div>
+      <span class="num" id="lossAmount">¥0</span>
+      <span class="multi" id="lossMulti">= 0 倍那一年的存款</span>
+      <div class="note">你以为损失的是<em style="color:var(--accent);font-style:normal">那一年的 1 万</em>。
+      实际上你损失的是——<em style="color:var(--accent);font-style:normal">那 1 万本应在剩下 30 年里继续滚出来的所有钱</em>。</div>
+    </div>
+  </div>
+
+  <p class="body-text reveal" style="margin-top:60px">
+  <strong>这就是为什么巴菲特说："我从不卖出。"</strong>
+  不是他不会判断市场。是他知道——<em>每一次中断，都在击碎复利的引擎</em>。
+  </p>
+</section>
+
+<!-- ============================================================
+     CH.02 幂律
+     ============================================================ -->
+<section class="ch-power" id="ch2">
+  <div class="chapter-meta reveal">
+    <span class="num">CH.02</span>
+    <span class="bar"></span>
+    <span>分布维度的非线性</span>
+    <span class="bar"></span>
+    <span style="color:var(--accent)">向导 · 塔勒布</span>
+  </div>
+
+  <h2 class="h-display reveal">"<em>平均</em>" 是一个<br>骗了你很多年的词。</h2>
+
+  <p class="lede reveal">在某些世界里，<strong>"平均"几乎不存在</strong>。
+  你以为的平均，是少数极端被你忽略后，剩下的中间值。</p>
+
+  <!-- 塔勒布出场 -->
+  <div class="host-bubble right reveal">
+    <div class="host-avatar">
+      <svg><use href="#avatar-taleb"/></svg>
+      <div class="avatar-name">纳西姆·塔勒布</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">NASSIM TALEB</span>
+      给你一个测试。<br>
+      美国成年人的<em>人均净资产</em>是多少？
+      <br><br>
+      <span class="silent">凭直觉。拖动滑杆。别想太久——你越想越会被骗。</span>
+    </div>
+  </div>
+
+  <!-- 猜测交互 -->
+  <div class="guess-box reveal">
+    <div class="guess-q">
+      你的猜测：美国成年人的<em style="color:var(--accent)">人均净资产</em>是多少？
+      <span class="small">▸ 拖动下方滑杆，金额会同步变化</span>
+    </div>
+
+    <div class="guess-readout">
+      <span class="name">▸ YOUR GUESS</span>
+      <span class="value" id="guessReadout">$100K</span>
+    </div>
+
+    <div class="guess-track">
+      <div class="markers">
+        <div class="guess-marker median" id="mkMedian">
+          <span class="lbl">真实中位数 $192K</span>
+          <span class="pin"></span>
+        </div>
+        <div class="guess-marker mean" id="mkMean">
+          <span class="lbl">真实平均值 $1,063K</span>
+          <span class="pin"></span>
+        </div>
+        <div class="guess-marker you" id="mkYou">
+          <span class="lbl">你 $100K</span>
+          <span class="pin"></span>
+        </div>
+      </div>
+      <input type="range" id="guessSlider" min="10" max="2000" value="100" step="10">
+    </div>
+
+    <div class="guess-actions">
+      <button class="btn-primary" id="guessRevealBtn">▸ 揭晓真相</button>
+      <button class="btn-ghost" id="guessResetBtn">重新猜</button>
+    </div>
+
+    <div class="gap-display" id="gapDisplay">
+      <div class="row"><span class="k">▸ 你的猜测</span><span class="v" id="dispYou">$100K</span></div>
+      <div class="row"><span class="k">▸ 实际平均值（被首富拉高）</span><span class="v" style="color:var(--fg)">$1,063K</span></div>
+      <div class="row"><span class="k">▸ 实际中位数（"普通人"的真实样子）</span><span class="v" style="color:var(--accent)">$192K</span></div>
+      <div class="gap-row">平均值是中位数的 <strong>5.5 倍</strong>。在这个世界里——<em style="color:var(--data-2);font-style:normal">少数人单方面把"平均"拉高了</em>。</div>
+    </div>
+  </div>
+
+  <!-- 塔勒布反应 -->
+  <div class="host-bubble reveal">
+    <div class="host-avatar">
+      <svg><use href="#avatar-taleb"/></svg>
+      <div class="avatar-name">纳西姆·塔勒布</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">NASSIM TALEB · 揭晓</span>
+      你不是<strong>猜错了</strong>。
+      <br>
+      你是<em>用错了世界</em>。
+      <br><br>
+      <span class="silent">下面这个图，是这个世界真正的样子——</span>
+    </div>
+  </div>
+
+  <!-- 放大可视化 -->
+  <div class="demo-card reveal">
+    <div class="demo-header">
+      <div class="left">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="id">demo_02.power · zoom_to_extreme</span>
+      </div>
+      <span>v1.0</span>
+    </div>
+    <div class="zoom-stage">
+      <div class="zoom-canvas">
+        <div class="zoom-overlay-top">
+          <span>美国财富分布 · N=100 (按比例缩放)</span>
+          <span>缩放: <span class="scale-val" id="scaleReadout">1×</span></span>
+        </div>
+        <div class="zoom-bars" id="zoomBars"></div>
+        <div class="zoom-axis"></div>
+        <div class="zoom-labels">
+          <span>← 99% 的人</span>
+          <span>顶级富豪 →</span>
+        </div>
+      </div>
+      <div class="zoom-controls">
+        <div class="ctrl-label" style="margin-bottom:14px">
+          <span class="name">▸ 缩小镜头 · 看见全貌</span>
+          <span class="value" id="zoomLabel">起始：能看见普通人</span>
+        </div>
+        <input type="range" id="zoomSlider" min="1" max="200" value="1" step="1">
+      </div>
+      <div class="zoom-final-msg" id="zoomFinalMsg">
+        <strong>当镜头拉到能看见马斯克——</strong>99% 的人已经被压成了底部的一根线。
+        在幂律世界里，<em>"平均"</em>就像问"鲸鱼和虾的平均体重"——它存在，但毫无意义。
+      </div>
+    </div>
+  </div>
+
+  <p class="body-text reveal" style="margin-top:60px">
+  你的大脑在用<em>钟形思维</em>理解一个<em>幂律世界</em>。<br>
+  这就是为什么你总是<strong>低估极端</strong>。
+  </p>
+
+  <div class="power-twolists reveal">
+    <div class="col col-bell">
+      <div class="col-h">钟形分布 · BELL CURVE</div>
+      <div class="title">"平均" 有意义的领域</div>
+      <ul>
+        <li>身高</li>
+        <li>智商</li>
+        <li>考试分数</li>
+        <li>血压</li>
+        <li>反应时间</li>
+        <li>人的寿命</li>
+      </ul>
+    </div>
+    <div class="col col-power">
+      <div class="col-h">幂律分布 · POWER LAW · <span style="color:var(--accent)">点击展开</span></div>
+      <div class="title">"平均" 骗你的领域</div>
+      <ul id="powerList">
+        <li data-key="wealth">财富 <span class="li-arrow">→</span></li>
+        <li data-key="influence">影响力 <span class="li-arrow">→</span></li>
+        <li data-key="startup">公司估值 <span class="li-arrow">→</span></li>
+        <li data-key="city">城市人口 <span class="li-arrow">→</span></li>
+        <li data-key="book">书籍销量 <span class="li-arrow">→</span></li>
+        <li data-key="extreme">地震 · 网红 · 战争 · 病毒 <span class="li-arrow">→</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 幂律详情弹层 -->
+  <div class="power-detail" id="powerDetail">
+    <div class="pd-empty" id="pdEmpty">
+      <div class="pd-empty-icon">▸</div>
+      <div class="pd-empty-text">点击右栏任一领域，看看"平均"具体在那里怎么骗你</div>
+    </div>
+    <div class="pd-card" id="pdCard">
+      <div class="pd-h">
+        <span class="pd-tag" id="pdTag">领域</span>
+        <span class="pd-title" id="pdTitle">标题</span>
+      </div>
+      <div class="pd-stats" id="pdStats"></div>
+      <div class="pd-punch" id="pdPunch"></div>
+    </div>
+  </div>
+
+  <p class="body-text reveal">
+  <strong>看一眼右边那一栏。</strong>它包含了你这辈子真正在乎的几乎所有东西——
+  而你一直在用左边的方式去理解它们。
+  </p>
+</section>
+
+<!-- ============================================================
+     CH.03 相变
+     ============================================================ -->
+<section class="ch-phase" id="ch3">
+  <div class="chapter-meta reveal">
+    <span class="num">CH.03</span>
+    <span class="bar"></span>
+    <span>临界维度的非线性</span>
+    <span class="bar"></span>
+    <span style="color:var(--accent)">向导 · 马斯克</span>
+  </div>
+
+  <h2 class="h-display reveal">99°C 还是水。<br>100°C 就<em>不是</em>了。</h2>
+
+  <p class="lede reveal">下面这壶水从 0°C 开始。
+  你可以一次加 <strong>+50</strong>、<strong>+10</strong>、或 <strong>+1</strong>。
+  <em>但最后 5 度——只能 +1。</em></p>
+
+  <!-- 马斯克出场 -->
+  <div class="host-bubble right reveal">
+    <div class="host-avatar">
+      <svg><use href="#avatar-musk"/></svg>
+      <div class="avatar-name">埃隆·马斯克</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">ELON MUSK</span>
+      用 <em>+50</em> 那个按钮，<strong>一次干到 95°C</strong>。<br>
+      然后——别用快捷键了。
+      <br><br>
+      <span class="silent">最后 5 度，慢慢点。看会发生什么。</span>
+    </div>
+  </div>
+
+  <!-- 主交互 -->
+  <div class="demo-card reveal">
+    <div class="demo-header">
+      <div class="left">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="id">demo_03.phase · 99_plus_1.kettle</span>
+      </div>
+      <span id="phaseStatus">v1.0 / READY</span>
+    </div>
+    <div class="phase-stage">
+      <div class="phase-canvas" id="phaseCanvas">
+        <div class="phase-counter">
+          <span>▸ 点击次数</span>
+          <span class="clicks" id="clickCount">0</span>
+        </div>
+        <div class="thermo">
+          <span class="temp" id="tempVal">0</span><span class="unit">°C</span>
+          <div class="state water" id="phaseState">液态 · WATER</div>
+        </div>
+        <div class="particles" id="particles"></div>
+        <div class="phase-warning" id="phaseWarning">最后 5 度——只能 +1°C</div>
+        <!-- 爆炸特效层 -->
+        <div class="phase-flash" id="phaseFlash"></div>
+        <div class="phase-speedline" id="phaseSpeedline"></div>
+      </div>
+      <div class="phase-controls">
+        <div class="phase-btns">
+          <button class="btn-heat" id="btn50">+ 50°C</button>
+          <button class="btn-heat" id="btn10">+ 10°C</button>
+          <button class="btn-heat primary" id="btn1">+ 1°C</button>
+        </div>
+        <p class="phase-info" id="phaseInfo">
+        ▸ 点 <em>+50°C</em> 两次（第二次会被截断到 95°C），然后用 <em>+1°C</em> 点完最后 5 次。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 个真实领域 -->
+  <div class="phase-extend" id="phaseExtend">
+    <div class="phase-extend-h">▸ 这从来不只是水</div>
+    <div class="phase-extend-grid" id="peGrid">
+      <div class="pe" data-key="rel">
+        <div class="pe-num">CASE 01</div>
+        <div class="pe-title">一段关系</div>
+        <div class="pe-sub">日常的小忽视积累</div>
+      </div>
+      <div class="pe" data-key="city">
+        <div class="pe-num">CASE 02</div>
+        <div class="pe-title">一座城市</div>
+        <div class="pe-sub">一户一户搬走</div>
+      </div>
+      <div class="pe" data-key="opinion">
+        <div class="pe-num">CASE 03</div>
+        <div class="pe-title">一个观点</div>
+        <div class="pe-sub">少数人在说</div>
+      </div>
+      <div class="pe" data-key="company">
+        <div class="pe-num">CASE 04</div>
+        <div class="pe-title">一家公司</div>
+        <div class="pe-sub">一个员工接一个</div>
+      </div>
+    </div>
+    <div class="phase-extend-detail empty" id="peDetail">▸ 点击上方任一卡片查看</div>
+  </div>
+
+  <!-- 马斯克总结 -->
+  <div class="host-bubble reveal" id="muskFinal" style="margin-top:60px">
+    <div class="host-avatar">
+      <svg><use href="#avatar-musk"/></svg>
+      <div class="avatar-name">埃隆·马斯克</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">ELON MUSK</span>
+      你生活里很多<em>"突然发生"</em>的事，<strong>从来不是突然</strong>。
+      <br><br>
+      它们已经积累了 99 度。<br>
+      你只是<em>没看见温度计</em>。
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CH.04 同构 终章
+     ============================================================ -->
+<section class="ch-iso">
+  <div class="chapter-meta reveal">
+    <span class="num">FINAL</span>
+    <span class="bar"></span>
+    <span>三个模型 · 同一种形状</span>
+  </div>
+
+  <h2 class="h-display reveal">这<em>不是</em>巧合。</h2>
+
+  <p class="lede reveal">把刚才看到的三条曲线叠在一起：</p>
+
+  <div class="iso-overlay reveal" id="isoOverlay">
+    <svg class="iso-svg" viewBox="0 0 800 360" preserveAspectRatio="none">
+      <g class="iso-grid" id="isoGrid"></g>
+      <line class="iso-axis" x1="40" y1="320" x2="780" y2="320"/>
+      <line class="iso-axis" x1="40" y1="20" x2="40" y2="320"/>
+      <path class="iso-c1" id="isoC1" d=""/>
+      <path class="iso-c2" id="isoC2" d=""/>
+      <path class="iso-c3" id="isoC3" d=""/>
+    </svg>
+    <div class="iso-legend">
+      <div class="item c1">复利 · 时间维度</div>
+      <div class="item c2">幂律 · 分布维度</div>
+      <div class="item c3">相变 · 临界维度</div>
+    </div>
+  </div>
+
+  <p class="iso-quote reveal">
+  时间、人群、温度——三个完全不同的世界，<em>同一种形状</em>。
+  </p>
+
+  <!-- 芒格终章 -->
+  <div class="host-bubble reveal">
+    <div class="host-avatar">
+      <svg><use href="#avatar-munger"/></svg>
+      <div class="avatar-name">查理·芒格</div>
+    </div>
+    <div class="host-speech">
+      <span class="who">CHARLIE MUNGER · 终章</span>
+      我活到 99 岁——<strong>不是因为聪明</strong>。<br>
+      是因为我一直在<em>避免愚蠢</em>。
+      <br><br>
+      而所谓<em>愚蠢</em>——往往就是用<span style="text-decoration:line-through;text-decoration-color:var(--data-2);text-decoration-thickness:2px;color:var(--fg-3)">线性</span>方式，
+      看一个<em>非线性的世界</em>。
+    </div>
+  </div>
+
+  <p class="iso-quote reveal" style="margin-top:80px">
+  你的大脑天生用 <span class="lin">线性</span> 方式思考。<br>
+  但<strong>这个世界不是线性的</strong>。
+  </p>
+
+  <p class="iso-quote reveal">
+  这就是为什么你总是——<br>
+  低估<em>长期</em>。低估<em>极端</em>。低估<em>突变</em>。
+  </p>
+
+  <p class="lede reveal" style="margin-top:80px;font-size:17px;color:var(--fg-3)">
+  这是<em style="color:var(--accent);font-style:normal">思维模型周期表 · Vol.001</em>。<br>
+  100 个模型里的前 3 个。
+  </p>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-meta">
+      <div><span class="label">PROJECT</span> · MENTAL_MODELS.OS</div>
+      <div><span class="label">VOLUME</span> · 001 / 100 · <span class="v">非线性</span></div>
+      <div><span class="label">MODELS</span> · 复利 · 幂律 · 相变</div>
+      <div><span class="label">HOSTS</span> · BUFFETT · TALEB · MUSK · MUNGER</div>
+      <div><span class="label">BUILD</span> · 2026.05 · v2.0</div>
+      <div style="margin-top:14px;color:var(--fg-4)">献给所有想看清世界本来样子的人</div>
+    </div>
+    <div class="foot-quote">
+      "真正聪明的人，不是因为他们知道得更多。<br>
+      而是因为他们用<em style="color:var(--accent);font-style:normal">非线性的方式</em>，对待一个非线性的世界。"
+      <span class="author">— 也许对你会有帮助</span>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>EOF · vol.001 · 0 ERRORS</span>
+    <a href="#">↑ BACK TO TOP</a>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+// ============================================================
+// 公用工具
+// ============================================================
+function $(s){return document.querySelector(s)}
+function $$(s){return document.querySelectorAll(s)}
+function formatYuan(n){
+  if(n>=100000000) return (n/100000000).toFixed(2)+'亿';
+  if(n>=10000) return (n/10000).toFixed(1)+'万';
+  return Math.round(n).toLocaleString();
+}
+
+// ============================================================
+// 自定义光标
+// ============================================================
+const curDot=$('#curDot'), curGlow=$('#curGlow'), curLabel=$('#curLabel');
+let mx=window.innerWidth/2, my=window.innerHeight/2, gx=mx, gy=my;
+window.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  curDot.style.left=mx+'px'; curDot.style.top=my+'px';
+  curLabel.style.left=mx+'px'; curLabel.style.top=my+'px';
+});
+function curLoop(){
+  gx += (mx-gx)*.18;
+  gy += (my-gy)*.18;
+  curGlow.style.left=gx+'px';
+  curGlow.style.top=gy+'px';
+  requestAnimationFrame(curLoop);
+}
+curLoop();
+
+document.addEventListener('mousedown',()=>{curDot.classList.add('click');curGlow.classList.add('click')});
+document.addEventListener('mouseup',()=>{curDot.classList.remove('click');curGlow.classList.remove('click')});
+document.addEventListener('mouseleave',()=>{curDot.style.opacity=0;curGlow.style.opacity=0;curLabel.classList.remove('show')});
+document.addEventListener('mouseenter',()=>{curDot.style.opacity=1;curGlow.style.opacity=1});
+
+// 光标 hover 系统：根据元素类型显示不同标签
+const cursorRules = [
+  {sel:'input[type=range]', label:'拖动 / DRAG', big:true},
+  {sel:'button', label:'按下 / PRESS', big:true},
+  {sel:'a[href^="#"]', label:'跳转 / JUMP', big:true},
+  {sel:'.pe', label:'查看 / VIEW', big:true},
+  {sel:'.lie', label:'读 / READ', big:false},
+  {sel:'.host-avatar', label:'人物 / HOST', big:true},
+  {sel:'.power-twolists .col-power li', label:'展开 / OPEN', big:true},
+];
+function findCursorRule(el){
+  for(const r of cursorRules){
+    if(el.closest(r.sel)) return r;
+  }
+  return null;
+}
+document.addEventListener('mouseover',e=>{
+  const rule = findCursorRule(e.target);
+  if(rule){
+    curLabel.textContent = rule.label;
+    curLabel.classList.add('show');
+    if(rule.big) curGlow.classList.add('big');
+  }
+});
+document.addEventListener('mouseout',e=>{
+  const rule = findCursorRule(e.target);
+  if(rule){
+    // 检查是否真的离开了这类元素
+    const related = e.relatedTarget;
+    if(!related || !findCursorRule(related)){
+      curLabel.classList.remove('show');
+      curGlow.classList.remove('big');
+    }
+  }
+});
+
+// ============================================================
+// 进度条
+// ============================================================
+const prog=$('#prog');
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  if(h>0) prog.style.width=(window.scrollY/h*100)+'%';
+});
+
+// ============================================================
+// 滚动揭示
+// ============================================================
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting) e.target.classList.add('in');
+}),{threshold:.12});
+$$('.reveal').forEach(el=>io.observe(el));
+
+// ============================================================
+// CH.01 复利
+// ============================================================
+const ageSlider=$('#ageSlider');
+const rateSlider=$('#rateSlider');
+const ageVal=$('#ageVal');
+const rateVal=$('#rateVal');
+const cmpAgeDisplay=$('#cmpAgeDisplay');
+const curveA=$('#curveA');
+const curveB=$('#curveB');
+const markA=$('#markA');
+const markB=$('#markB');
+const labelA=$('#labelA');
+const labelB=$('#labelB');
+const bBaseline=$('#bBaseline');
+
+// 计算复利
+function compoundWealth(rate){
+  const r=rate/100;
+  const A=[], B=[];
+  let a=0, b=0;
+  for(let y=0;y<=40;y++){
+    if(y>=1 && y<=10) b=b*(1+r)+10000;
+    else if(y>10) b=b*(1+r);
+    if(y>=11) a=a*(1+r)+10000;
+    A.push(a);
+    B.push(b);
+  }
+  return {A,B};
+}
+function compoundInterrupt(rate, brkYear){
+  const r=rate/100;
+  let b=0;
+  for(let y=1;y<=40;y++){
+    if(y>=1 && y<=10){
+      if(y===brkYear) b=b*(1+r);  // 跳过这次存款，本金继续
+      else b=b*(1+r)+10000;
+    } else if(y>10) b=b*(1+r);
+  }
+  return b;
+}
+
+// SVG 视口参数
+const CMP_W=800, CMP_H=400, PAD_L=60, PAD_R=20, PAD_T=20, PAD_B=40;
+function buildCmpPath(arr, max){
+  return arr.map((v,i)=>{
+    const x = PAD_L + (CMP_W-PAD_L-PAD_R) * (i/40);
+    const y = (CMP_H-PAD_B) - (CMP_H-PAD_T-PAD_B) * (v/max);
+    return [x.toFixed(1), y.toFixed(1)];
+  });
+}
+function pathToD(pts){
+  return 'M'+pts.map(p=>p[0]+','+p[1]).join(' L ');
+}
+
+let cmpState=null;
+function rebuildCompound(){
+  const rate=parseInt(rateSlider.value);
+  rateVal.textContent=rate+'%';
+  const w=compoundWealth(rate);
+  const max=Math.max(...w.A, ...w.B);
+  const ptsA=buildCmpPath(w.A, max);
+  const ptsB=buildCmpPath(w.B, max);
+  cmpState={rate, A:w.A, B:w.B, max, ptsA, ptsB};
+  bBaseline.textContent = '¥'+formatYuan(w.B[40]);
+  // 注意：updateCompoundAge 会根据当前滑杆位置画线
+  updateCompoundAge();
+  updateInterrupt();
+}
+
+function updateCompoundAge(){
+  if(!cmpState) return;
+  const age=parseInt(ageSlider.value);
+  const idx=age-25;
+  ageVal.textContent=age;
+  cmpAgeDisplay.textContent='AGE: '+age;
+
+  // 关键：曲线只画到当前 idx，让用户拖动时曲线"长出来"
+  if(idx >= 1){
+    const partA = cmpState.ptsA.slice(0, idx+1);
+    const partB = cmpState.ptsB.slice(0, idx+1);
+    curveA.setAttribute('d', pathToD(partA));
+    curveB.setAttribute('d', pathToD(partB));
+  } else {
+    curveA.setAttribute('d', '');
+    curveB.setAttribute('d', '');
+  }
+
+  // markers
+  const [ax,ay]=cmpState.ptsA[idx];
+  const [bx,by]=cmpState.ptsB[idx];
+  markA.setAttribute('cx', ax);
+  markA.setAttribute('cy', ay);
+  markB.setAttribute('cx', bx);
+  markB.setAttribute('cy', by);
+
+  // 末端数字标签（始终在末端，不跟着 marker）
+  const aEnd=cmpState.ptsA[idx];
+  const bEnd=cmpState.ptsB[idx];
+  labelA.setAttribute('x', parseFloat(aEnd[0])+10);
+  labelA.setAttribute('y', parseFloat(aEnd[1])-8);
+  labelA.textContent = '老李 ¥'+formatYuan(cmpState.A[idx]);
+  labelB.setAttribute('x', parseFloat(bEnd[0])+10);
+  labelB.setAttribute('y', parseFloat(bEnd[1])-8);
+  labelB.textContent = '小王 ¥'+formatYuan(cmpState.B[idx]);
+
+  // 同步实时对比模块
+  updateLiveCompare(age, idx);
+}
+
+function updateLiveCompare(age, idx){
+  // 老李：35-65 投，每年 1 万
+  const aInv = Math.max(0, Math.min(idx-10, 30)) * 10000;
+  // 小王：25-35 投，每年 1 万，最多 10 万
+  const bInv = Math.min(idx, 10) * 10000;
+  const aAsset = cmpState.A[idx];
+  const bAsset = cmpState.B[idx];
+
+  $('#lcAge').textContent = age;
+  $('#lcAInv').textContent = '¥' + formatYuan(aInv);
+  $('#lcBInv').textContent = '¥' + formatYuan(bInv);
+  $('#lcAAsset').textContent = '¥' + formatYuan(aAsset);
+  $('#lcBAsset').textContent = '¥' + formatYuan(bAsset);
+
+  // 本金对比
+  const lcInvRatio = $('#lcInvRatio');
+  if(aInv === 0 && bInv === 0){
+    lcInvRatio.textContent = '都还没开始';
+  } else if(aInv === 0){
+    lcInvRatio.innerHTML = `老李 <span style="color:var(--data-1)">¥0</span> · 小王 <span style="color:var(--accent)">¥${formatYuan(bInv)}</span>`;
+  } else if(bInv === aInv){
+    lcInvRatio.innerHTML = `老李 <span style="color:var(--data-1)">¥${formatYuan(aInv)}</span> · 小王 <span style="color:var(--accent)">¥${formatYuan(bInv)}</span> · 持平`;
+  } else {
+    const ratio = aInv / bInv;
+    lcInvRatio.innerHTML = `老李 <span style="color:var(--data-1)">¥${formatYuan(aInv)}</span> · 小王 <span style="color:var(--accent)">¥${formatYuan(bInv)}</span> · <span style="color:var(--fg-3)">老李投了 ${ratio.toFixed(1)} 倍</span>`;
+  }
+
+  // 资产对比 + verdict
+  const lcAssetRatio = $('#lcAssetRatio');
+  const lcVerdict = $('#lcVerdict');
+
+  if(aAsset === 0 && bAsset === 0){
+    lcAssetRatio.textContent = '— 还没开始 —';
+    lcAssetRatio.classList.remove('accent');
+    lcVerdict.classList.remove('flip');
+    lcVerdict.innerHTML = '▸ 拖动滑杆开始';
+  } else if(aAsset === 0){
+    lcAssetRatio.innerHTML = `小王已经在跑了 · <span style="color:var(--accent)">¥${formatYuan(bAsset)}</span>`;
+    lcAssetRatio.classList.remove('accent');
+    lcVerdict.classList.remove('flip');
+    lcVerdict.innerHTML = `▸ 老李还<strong style="color:var(--data-1)">没开始</strong>，小王已经攒下了 ¥${formatYuan(bAsset)}。`;
+  } else {
+    const bMoreThanA = bAsset >= aAsset;
+    if(bMoreThanA){
+      const multi = (bAsset / aAsset).toFixed(2);
+      lcAssetRatio.innerHTML = `小王 <strong style="color:var(--accent)">${multi}×</strong> 老李`;
+      lcAssetRatio.classList.add('accent');
+      lcVerdict.classList.add('flip');
+      // 智能 verdict：核心是表达"投入少 vs 资产多"的反差
+      if(aInv === 0){
+        // 老李还没开始投（已在上一个 if 处理过，这里兜底）
+        lcVerdict.innerHTML = `▸ 老李还没开始，小王已经领先 <strong>${formatYuan(bAsset-aAsset)}</strong>。`;
+      } else if(bInv > aInv){
+        // 小王投得多（35 岁前以及刚过 35 岁时）
+        const invMulti = (bInv / aInv).toFixed(1);
+        lcVerdict.innerHTML = `▸ 小王不仅起步早，本金还是老李的 <strong>${invMulti} 倍</strong>。资产差距 <strong>${multi} 倍</strong>。`;
+      } else if(bInv === aInv){
+        lcVerdict.innerHTML = `▸ 投入一样多，但小王早起的那 10 年，让他多拿了 <strong>${multi} 倍</strong>。`;
+      } else {
+        // 老李投得多了——但资产还是少（这是高潮）
+        const invMulti = (aInv / bInv).toFixed(1);
+        lcVerdict.innerHTML = `▸ 老李投得是小王的 <strong>${invMulti} 倍</strong>，资产却<em>反而少 ${multi} 倍</em>。`;
+      }
+    } else {
+      const multi = (aAsset / bAsset).toFixed(2);
+      lcAssetRatio.innerHTML = `老李 <strong style="color:var(--data-1)">${multi}×</strong> 小王 · <span style="color:var(--fg-3);font-size:14px">暂时领先</span>`;
+      lcAssetRatio.classList.remove('accent');
+      lcVerdict.classList.remove('flip');
+      lcVerdict.innerHTML = `▸ 老李刚开始投，暂时还在追赶。<span style="color:var(--fg-3)">继续往后拖看会发生什么。</span>`;
+    }
+  }
+}
+
+ageSlider.addEventListener('input', updateCompoundAge);
+rateSlider.addEventListener('input', rebuildCompound);
+
+// 网格线
+const cmpGrid=$('#cmpGrid');
+for(let i=1;i<=4;i++){
+  const y=PAD_T + (CMP_H-PAD_T-PAD_B)*(i/5);
+  const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+  ln.setAttribute('x1',PAD_L); ln.setAttribute('x2',CMP_W-PAD_R);
+  ln.setAttribute('y1',y); ln.setAttribute('y2',y);
+  cmpGrid.appendChild(ln);
+}
+
+// 中断模块
+const interruptPills=$('#interruptPills');
+const lossAmount=$('#lossAmount');
+const lossMulti=$('#lossMulti');
+let brkYear=1;
+interruptPills.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    interruptPills.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    brkYear=parseInt(btn.dataset.y);
+    updateInterrupt();
+  });
+});
+function updateInterrupt(){
+  if(!cmpState) return;
+  const reduced=compoundInterrupt(cmpState.rate, brkYear);
+  const loss=cmpState.B[40]-reduced;
+  lossAmount.textContent='¥'+formatYuan(loss);
+  lossMulti.textContent='= '+(loss/10000).toFixed(0)+' 倍那一年的存款';
+}
+
+// 初始化
+rebuildCompound();
+
+// ============================================================
+// CH.02 幂律
+// ============================================================
+const guessSlider=$('#guessSlider');
+const guessReadout=$('#guessReadout');
+const dispYou=$('#dispYou');
+const guessRevealBtn=$('#guessRevealBtn');
+const guessResetBtn=$('#guessResetBtn');
+const gapDisplay=$('#gapDisplay');
+const mkMedian=$('#mkMedian');
+const mkMean=$('#mkMean');
+const mkYou=$('#mkYou');
+
+const GUESS_MAX=2000; // K
+function updateGuess(){
+  const v=parseInt(guessSlider.value);
+  guessReadout.textContent='$'+v+'K';
+  // 同步 you marker 位置
+  const pct=v/GUESS_MAX*100;
+  mkYou.style.left=pct+'%';
+}
+guessSlider.addEventListener('input', updateGuess);
+updateGuess();
+
+// 揭晓
+guessRevealBtn.addEventListener('click',()=>{
+  const v=parseInt(guessSlider.value);
+  dispYou.textContent='$'+v+'K';
+  // 显示三个 marker
+  mkYou.classList.add('show');
+  // 192 / 2000 = 9.6%
+  mkMedian.style.left=(192/GUESS_MAX*100)+'%';
+  mkMedian.classList.add('show');
+  // 1063 / 2000 = 53.15%
+  mkMean.style.left=(1063/GUESS_MAX*100)+'%';
+  mkMean.classList.add('show');
+  // gap display
+  gapDisplay.classList.add('show');
+});
+guessResetBtn.addEventListener('click',()=>{
+  mkYou.classList.remove('show');
+  mkMedian.classList.remove('show');
+  mkMean.classList.remove('show');
+  gapDisplay.classList.remove('show');
+  guessSlider.value=100;
+  updateGuess();
+});
+
+// 幂律放大可视化
+const zoomBars=$('#zoomBars');
+const zoomSlider=$('#zoomSlider');
+const zoomLabel=$('#zoomLabel');
+const scaleReadout=$('#scaleReadout');
+const zoomFinalMsg=$('#zoomFinalMsg');
+
+const NUM_PEOPLE=100;
+const peopleData=[];
+for(let i=0;i<NUM_PEOPLE;i++){
+  const rank=NUM_PEOPLE-i;
+  peopleData.push(Math.pow(rank, -1.6));
+}
+peopleData.sort((a,b)=>a-b);
+// 把最大值替换为马斯克 = 第二名 × 200
+peopleData[NUM_PEOPLE-1]=peopleData[NUM_PEOPLE-2]*200;
+
+// 渲染条柱
+const barEls=[];
+for(let i=0;i<NUM_PEOPLE;i++){
+  const bar=document.createElement('div');
+  bar.className='bar';
+  if(i===NUM_PEOPLE-1){
+    bar.classList.add('elite');
+    bar.dataset.name='MUSK';
+  } else if(i===NUM_PEOPLE-2){
+    bar.dataset.name='BEZOS';
+  } else if(i===NUM_PEOPLE-3){
+    bar.dataset.name='ZUCK';
+  }
+  zoomBars.appendChild(bar);
+  barEls.push(bar);
+}
+
+// scale=1: visMax = 普通人区间 → 80 分位高度 ~83%, 马斯克爆出顶部
+// scale=200: visMax = 马斯克 → 马斯克 95% 高度, 普通人变线
+function updateZoom(){
+  const scale=parseInt(zoomSlider.value);
+  scaleReadout.textContent=scale+'×';
+
+  const visMaxStart = peopleData[80] * 1.2;     // 普通人世界
+  const visMaxEnd = peopleData[NUM_PEOPLE-1] * 1.05;
+  const t = (scale-1)/199;
+  const visMax = visMaxStart * Math.pow(visMaxEnd/visMaxStart, t);
+
+  barEls.forEach((bar, i)=>{
+    // 不截断 1 — 让马斯克在 scale 小时高度爆出画面顶部
+    const ratio = peopleData[i]/visMax;
+    // 但限制最大显示为 800%（避免 DOM 渲染太离谱）
+    bar.style.height = Math.min(ratio*100, 800) + '%';
+  });
+
+  // 文案变化
+  const eliteBar=barEls[NUM_PEOPLE-1];
+  if(scale<10){
+    zoomLabel.textContent='起始 · 能看见普通人 / 马斯克爆出画面顶部';
+    zoomFinalMsg.classList.remove('show');
+    eliteBar.classList.remove('named');
+  } else if(scale<60){
+    zoomLabel.textContent=scale+'× · 镜头拉远，马斯克的柱子正在下降';
+    zoomFinalMsg.classList.remove('show');
+    eliteBar.classList.add('named');
+  } else if(scale<150){
+    zoomLabel.textContent=scale+'× · 99% 的人正在变成一根线';
+    zoomFinalMsg.classList.remove('show');
+    eliteBar.classList.add('named');
+  } else {
+    zoomLabel.textContent=scale+'× · "平均" 不再有意义';
+    zoomFinalMsg.classList.add('show');
+    eliteBar.classList.add('named');
+  }
+}
+zoomSlider.addEventListener('input', updateZoom);
+updateZoom();
+
+// ============================================================
+// CH.02b 幂律右栏：点击查看详情
+// ============================================================
+const powerData = {
+  wealth: {
+    tag: '财富',
+    title: '美国成年人净资产',
+    stats: [
+      {k: '看似的"人均"', v: '$106 万', sub: '听上去人均都是百万富翁', cls:'real'},
+      {k: '一半人的真实样子', v: '不到 $20 万', sub: '中位数才是身边人的样子', cls:'you'}
+    ],
+    punch: '你以为你"低于平均水平"——其实你<em>就在中间</em>。把<strong>顶端 1%</strong>挪走，"平均"会瞬间塌一半。'
+  },
+  influence: {
+    tag: '影响力',
+    title: '互联网内容曝光',
+    stats: [
+      {k: '头部 1% 的内容', v: '占走 50% 流量', sub: '一条爆款 = 千万条普通内容', cls:'real'},
+      {k: '剩下 99% 的内容', v: '分剩下的一半', sub: '"内容创作者人均流量"≈ 噪音', cls:'you'}
+    ],
+    punch: '你拼命做的"还不错"的内容——在这个分布里，<em>等于不存在</em>。要么爆，要么算 0。'
+  },
+  startup: {
+    tag: '公司估值',
+    title: '风险投资回报',
+    stats: [
+      {k: '顶级 VC 基金', v: '5% 项目 = 95% 回报', sub: '其余项目几乎归零', cls:'real'},
+      {k: '"平均回报率"', v: '一个无意义的数字', sub: '它由 1-2 个项目决定', cls:'you'}
+    ],
+    punch: 'VC 不是"好项目的命中率"游戏——是<strong>不能错过那 1 个</strong>的游戏。<em>错过一次 = 全军覆没</em>。'
+  },
+  city: {
+    tag: '城市人口',
+    title: '中国城市规模',
+    stats: [
+      {k: '上海一座城', v: '2,475 万人', sub: '相当于澳大利亚总人口', cls:'real'},
+      {k: '中国城市"中位数"', v: '约 60 万', sub: '小到你听都没听过', cls:'you'}
+    ],
+    punch: '"平均城市"在你脑子里是省会规模——<em>实际中位数小到你听都没听过</em>。少数巨型城市单方面定义了"中国城市"的印象。'
+  },
+  book: {
+    tag: '书籍销量',
+    title: '出版业的现实',
+    stats: [
+      {k: '榜单前 1% 的书', v: '占 80% 销量', sub: '一本《活着》= 千本无人问津', cls:'real'},
+      {k: '99% 的新书', v: '终生卖不到 1000 本', sub: '"作家平均年收入" 是骗人的', cls:'you'}
+    ],
+    punch: '想成为作家？你想的是<strong>"中产作家"的生活</strong>——但那种生活<em>几乎不存在</em>。要么超级畅销，要么没人读。'
+  },
+  extreme: {
+    tag: '极端事件',
+    title: '地震 · 网红 · 战争 · 病毒',
+    stats: [
+      {k: '加州过去 200 年地震', v: '1 次 = 100 次的总和', sub: '一次大地震 = 你这辈子的"地震印象"', cls:'real'},
+      {k: '历史所有战争伤亡', v: '前 3% = 70% 死亡人数', sub: '少数几次战争 = 整部战争史', cls:'you'}
+    ],
+    punch: '"过去 100 年都没事"——这句话在幂律世界里<em>毫无安慰作用</em>。<strong>大事还没发生，不代表它不会发生。</strong>'
+  }
+};
+
+const powerList = $('#powerList');
+const pdEmpty = $('#pdEmpty');
+const pdCard = $('#pdCard');
+const pdTag = $('#pdTag');
+const pdTitle = $('#pdTitle');
+const pdStats = $('#pdStats');
+const pdPunch = $('#pdPunch');
+
+powerList.querySelectorAll('li').forEach(li=>{
+  li.addEventListener('click',()=>{
+    const k = li.dataset.key;
+    const d = powerData[k];
+    if(!d) return;
+    powerList.querySelectorAll('li').forEach(x=>x.classList.remove('active'));
+    li.classList.add('active');
+
+    pdEmpty.classList.add('hide');
+    pdCard.classList.remove('show');
+    void pdCard.offsetWidth;  // 强制重排，重启动画
+    pdCard.classList.add('show');
+
+    pdTag.textContent = d.tag;
+    pdTitle.textContent = d.title;
+
+    pdStats.innerHTML = d.stats.map(s=>`
+      <div class="pd-stat ${s.cls}">
+        <div class="k">${s.k}</div>
+        <div class="v">${s.v}</div>
+        <div class="sub">${s.sub}</div>
+      </div>
+    `).join('');
+
+    pdPunch.innerHTML = '▸ ' + d.punch;
+  });
+});
+
+// ============================================================
+// CH.03 相变
+// ============================================================
+const btn50=$('#btn50');
+const btn10=$('#btn10');
+const btn1=$('#btn1');
+const tempVal=$('#tempVal');
+const clickCount=$('#clickCount');
+const phaseState=$('#phaseState');
+const phaseCanvas=$('#phaseCanvas');
+const phaseInfo=$('#phaseInfo');
+const phaseStatus=$('#phaseStatus');
+const particles=$('#particles');
+const phaseExtend=$('#phaseExtend');
+const phaseWarning=$('#phaseWarning');
+
+let temp=0;
+let clicks=0;
+let boiled=false;
+
+// 创建粒子
+const PARTICLE_COUNT=60;
+const particleEls=[];
+for(let i=0;i<PARTICLE_COUNT;i++){
+  const p=document.createElement('div');
+  p.className='particle';
+  // 初始集中在底部 1/3
+  const x=10+Math.random()*80;
+  const y=60+Math.random()*35;
+  p.style.left=x+'%';
+  p.style.top=y+'%';
+  p.dataset.bx=x;
+  p.dataset.by=y;
+  particles.appendChild(p);
+  particleEls.push(p);
+}
+
+function jitterParticles(intensity){
+  particleEls.forEach(p=>{
+    const jx=(Math.random()-.5)*intensity*5;
+    const jy=(Math.random()-.5)*intensity*5;
+    p.style.setProperty('--tx', jx+'px');
+    p.style.setProperty('--ty', jy+'px');
+    p.style.transform=`translate(${jx}px, ${jy}px)`;
+  });
+}
+
+function explodeParticles(){
+  // 粒子爆炸：每个粒子获得一个随机方向 + 距离的向量，用 CSS 动画播放
+  particleEls.forEach(p=>{
+    const angle = Math.random() * Math.PI * 2;
+    // 距离从 80 到 220 像素，向上的概率更高（蒸汽往上飘）
+    const distance = 80 + Math.random() * 140;
+    const ex = Math.cos(angle) * distance;
+    // 让 y 倾向向上（负方向），模拟蒸汽
+    const ey = Math.sin(angle) * distance - 60;
+    p.style.setProperty('--ex', ex + 'px');
+    p.style.setProperty('--ey', ey + 'px');
+    p.classList.add('exploding');
+  });
+}
+
+function triggerPhaseTransition(){
+  boiled=true;
+  btn1.classList.remove('glow');
+  btn1.disabled=true;
+  btn50.disabled=true;
+  btn10.disabled=true;
+  btn1.textContent='✓ 相变完成';
+  phaseStatus.textContent='v1.0 / PHASE TRANSITION';
+
+  // 1. 立刻：白闪 + 速度线 + 温度数字脉冲 + 容器震动 + 粒子爆炸
+  $('#phaseFlash').classList.remove('fire');
+  $('#phaseSpeedline').classList.remove('fire');
+  tempVal.classList.remove('pulse');
+  // 强制重排以重启动画
+  void $('#phaseFlash').offsetWidth;
+  $('#phaseFlash').classList.add('fire');
+  $('#phaseSpeedline').classList.add('fire');
+  tempVal.classList.add('pulse');
+  phaseCanvas.classList.add('boiling');
+  explodeParticles();
+
+  // 2. 0.5s 后：切换到蒸汽态
+  setTimeout(()=>{
+    phaseCanvas.classList.remove('boiling');
+    phaseCanvas.classList.add('steam');
+    phaseState.textContent='气态 · STEAM';
+    phaseState.classList.remove('water');
+    phaseState.classList.add('steam');
+    phaseInfo.innerHTML='<em>从 0°C 到 99°C，水还是水。</em><br>第 100°C 那一下——<strong>一切都变了</strong>。';
+  }, 500);
+
+  // 3. 1.0s 后：粒子重置为飘散位置
+  setTimeout(()=>{
+    particleEls.forEach(p=>{
+      p.classList.remove('exploding');
+      // 把粒子散布在画面上半部分，模拟蒸汽弥漫
+      const nx = Math.random() * 100;
+      const ny = Math.random() * 70;
+      p.style.left = nx + '%';
+      p.style.top = ny + '%';
+      p.style.transform = '';
+      p.style.setProperty('--tx', '0px');
+      p.style.setProperty('--ty', '0px');
+    });
+  }, 1000);
+
+  // 4. 1.4s 后：展开 4 个真实领域
+  setTimeout(()=>phaseExtend.classList.add('show'), 1400);
+}
+
+function showWarning(){
+  phaseWarning.classList.add('show');
+  setTimeout(()=>phaseWarning.classList.remove('show'), 1800);
+}
+
+function setTemp(newTemp){
+  temp=Math.max(0, Math.min(100, newTemp));
+  tempVal.textContent=temp;
+  clickCount.textContent=clicks;
+  const intensity=Math.min(1, temp/100);
+  jitterParticles(intensity);
+
+  if(temp>=95 && temp<100){
+    btn1.classList.add('glow');
+    btn50.disabled=true;
+    btn10.disabled=true;
+    phaseInfo.innerHTML='已经到 95°C。<em>最后 5 度只能 +1°C —— 慢慢来。</em>';
+  }
+
+  if(temp===100 && !boiled){
+    triggerPhaseTransition();
+  }
+}
+
+btn50.addEventListener('click',()=>{
+  if(boiled) return;
+  if(temp>=95){ showWarning(); return; }
+  clicks++;
+  if(temp+50 > 95){
+    setTemp(95);
+    showWarning();
+  } else {
+    setTemp(temp+50);
+  }
+});
+btn10.addEventListener('click',()=>{
+  if(boiled) return;
+  if(temp>=95){ showWarning(); return; }
+  clicks++;
+  if(temp+10 > 95){
+    setTemp(95);
+    showWarning();
+  } else {
+    setTemp(temp+10);
+  }
+});
+btn1.addEventListener('click',()=>{
+  if(boiled) return;
+  clicks++;
+  setTemp(temp+1);
+});
+
+// 案例切换
+const peCases={
+  rel:'<strong>第 N 次小忽视后，关系突然结束。</strong>她不是因为这一次没回消息才走的——是<em>前 99 次没回消息</em>积累的结果。这一次只是触发器。',
+  city:'<strong>一户人家搬走了。又一户。又一户。</strong>第 N 户搬走时，整个街区一夜之间崩溃——商店关门、学校关闭、剩下的人也开始打包。这就是<em>临界质量</em>。',
+  opinion:'<strong>少数人在说。少数人在说。</strong>突然之间——所有人都在说。这就是为什么"舆论转向"看起来总是<em>一夜之间</em>，但其实每次都是相变。',
+  company:'<strong>一个员工辞职。又一个。</strong>第 N 个走的时候——剩下的人突然集体提辞呈。优秀的人之间有<em>共振频率</em>，超过临界点时，整个组织瞬间崩盘。'
+};
+$$('#peGrid .pe').forEach(el=>{
+  el.addEventListener('click',()=>{
+    $$('#peGrid .pe').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    const k=el.dataset.key;
+    const detail=$('#peDetail');
+    detail.classList.remove('empty');
+    detail.innerHTML=peCases[k];
+  });
+});
+
+// 初始化粒子
+jitterParticles(0);
+
+// ============================================================
+// CH.04 同构 — 三条曲线叠加
+// ============================================================
+const ISO_W=800, ISO_H=360, IPL=40, IPR=20, IPT=20, IPB=40;
+function isoX(t){return IPL + (ISO_W-IPL-IPR)*t}
+function isoY(v){return ISO_H-IPB - (ISO_H-IPT-IPB)*v}
+function isoCurve(fn){
+  const pts=[];
+  for(let i=0;i<=100;i++){
+    const t=i/100;
+    pts.push([isoX(t).toFixed(1), isoY(fn(t)).toFixed(1)]);
+  }
+  return 'M'+pts.map(p=>p.join(',')).join(' L ');
+}
+
+// 复利：指数
+$('#isoC1').setAttribute('d', isoCurve(t=>(Math.exp(t*3)-1)/(Math.exp(3)-1)));
+// 幂律：rank^-alpha 镜像
+$('#isoC2').setAttribute('d', isoCurve(t=>{
+  const r=1.01-t;
+  return Math.min(1, Math.pow(r,-1.5)/Math.pow(.01,-1.5));
+}));
+// 相变：sigmoid 陡阶跃
+$('#isoC3').setAttribute('d', isoCurve(t=>1/(1+Math.exp(-(t-.85)*30))));
+
+// 网格
+const isoGrid=$('#isoGrid');
+for(let i=1;i<=4;i++){
+  const y=IPT+(ISO_H-IPT-IPB)*(i/5);
+  const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+  ln.setAttribute('x1',IPL); ln.setAttribute('x2',ISO_W-IPR);
+  ln.setAttribute('y1',y); ln.setAttribute('y2',y);
+  isoGrid.appendChild(ln);
+}
+
+</script>
+</body>
+</html>

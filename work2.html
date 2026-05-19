@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>注意力 · 战争已经开始</title>
+<link rel="preconnect" href="https://fonts.loli.net">
+<link href="https://fonts.loli.net/css2?family=Noto+Serif+SC:wght@400;700;900&family=JetBrains+Mono:wght@400;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07090f;--fg:#e8e4d8;--accent:#ff4d00;--accent2:#00e5ff;--accent3:#ffcc00;--dim:#2e2e3e;--dim2:#4a4a5a;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--fg);font-family:'Noto Serif SC',serif;cursor:none;overflow-x:hidden;}
+#cursor-dot{position:fixed;width:8px;height:8px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:background .2s,width .2s,height .2s;mix-blend-mode:difference;}
+#cursor-ring{position:fixed;width:40px;height:40px;border:1.5px solid rgba(255,77,0,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s;}
+#cursor-label{position:fixed;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent2);pointer-events:none;z-index:9997;letter-spacing:2px;text-transform:uppercase;opacity:0;transition:opacity .2s;white-space:nowrap;}
+body.cursor-hover #cursor-dot{width:12px;height:12px;background:var(--accent2);}
+body.cursor-hover #cursor-ring{width:60px;height:60px;border-color:var(--accent2);}
+body.cursor-hover #cursor-label{opacity:1;}
+body.cursor-drag #cursor-dot{background:var(--accent3);}
+body.cursor-drag #cursor-ring{border-color:var(--accent3);width:50px;height:50px;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.4;}
+#progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:999;width:0%;transition:width .1s;}
+#chapnav{position:fixed;right:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:500;}
+.chapnav-dot{width:6px;height:6px;border-radius:50%;background:var(--dim2);transition:all .3s;cursor:none;}
+.chapnav-dot.active{background:var(--accent);box-shadow:0 0 8px var(--accent);transform:scale(1.5);}
+section{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 10vw;position:relative;overflow:hidden;}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s ease,transform .8s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+/* HERO */
+#s0{align-items:center;justify-content:center;text-align:center;}
+#particle-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+.hero-content{position:relative;z-index:2;}
+.hero-kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:32px;opacity:0;animation:fadeUp 1s .3s forwards;}
+.hero-title{font-size:clamp(56px,10vw,120px);font-weight:900;line-height:.95;letter-spacing:-2px;margin-bottom:24px;opacity:0;animation:fadeUp 1s .6s forwards;}
+.hero-title em{font-style:normal;color:var(--accent);position:relative;display:inline-block;}
+.hero-title em::after{content:'';position:absolute;top:50%;left:-2px;right:-2px;height:5px;background:var(--accent);opacity:.5;transform:translateY(-50%);}
+.hero-sub{font-size:18px;color:rgba(232,228,216,.5);max-width:480px;margin:0 auto 48px;line-height:1.7;opacity:0;animation:fadeUp 1s .9s forwards;}
+.hero-counter-wrap{opacity:0;animation:fadeUp 1s 1.2s forwards;}
+.hero-counter-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent2);text-transform:uppercase;margin-bottom:8px;}
+.hero-counter{font-family:'JetBrains Mono',monospace;font-size:clamp(40px,6vw,72px);font-weight:700;color:var(--accent3);text-shadow:0 0 30px rgba(255,204,0,.4);}
+.scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp 1s 2s forwards;z-index:2;}
+.scroll-hint span{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim2);text-transform:uppercase;}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--dim2),transparent);animation:scrollPulse 2s infinite;}
+@keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.2)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* GLITCH — 被收割 */
+.glitch-wrap{position:relative;display:inline-block;color:var(--fg);}
+.glitch-wrap::before,.glitch-wrap::after{content:attr(data-text);position:absolute;inset:0;pointer-events:none;}
+.glitch-wrap::before{color:#ff0044;clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);animation:glitch-a 4s infinite steps(1);}
+.glitch-wrap::after{color:#00e5ff;clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);animation:glitch-b 4s infinite steps(1);}
+@keyframes glitch-a{
+  0%,89%{transform:none;opacity:0}
+  90%{transform:translate(-3px,1px);opacity:1}
+  91%{transform:translate(2px,-1px);opacity:1}
+  92%{transform:translate(-1px,2px);opacity:1}
+  93%,100%{transform:none;opacity:0}
+}
+@keyframes glitch-b{
+  0%,91%{transform:none;opacity:0}
+  92%{transform:translate(3px,-1px);opacity:1}
+  93%{transform:translate(-2px,1px);opacity:1}
+  94%,100%{transform:none;opacity:0}
+}
+/* scan-line sweep over 被收割 */
+.glitch-wrap .scan{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;
+}
+.glitch-wrap .scan::after{
+  content:'';position:absolute;left:0;right:0;height:2px;
+  background:rgba(255,77,0,.55);
+  animation:scan-sweep 3.5s linear infinite;
+  box-shadow:0 0 8px rgba(255,77,0,.6);
+}
+@keyframes scan-sweep{
+  0%{top:-4px;opacity:0}
+  5%{opacity:1}
+  95%{opacity:1}
+  100%{top:calc(100% + 4px);opacity:0}
+}
+/* random static flicker */
+@keyframes static-flicker{
+  0%,97%{text-shadow:none}
+  97.5%{text-shadow:2px 0 0 #ff0044,-2px 0 0 #00e5ff}
+  98%{text-shadow:-3px 0 0 #ff0044,3px 0 0 #00e5ff}
+  98.5%{text-shadow:1px 0 0 #ff0044,-1px 0 0 #00e5ff}
+  99%{text-shadow:none}
+  99.5%{text-shadow:-2px 0 0 #ff0044,2px 0 0 #00e5ff}
+  100%{text-shadow:none}
+}
+.glitch-wrap{animation:static-flicker 4s infinite;}
+
+/* ELECTRIC TIMELINE */
+.timeline-electric{position:absolute;top:9px;left:12.5%;right:12.5%;height:2px;overflow:visible;z-index:0;pointer-events:none;}
+.tl-wire{stroke:var(--dim);stroke-width:1;fill:none;}
+.tl-current{display:none;}
+#tl-current-bar{position:absolute;top:10px;left:0;width:0;height:2px;z-index:1;pointer-events:none;background:repeating-linear-gradient(90deg,var(--accent) 0 8px,transparent 8px 14px);filter:drop-shadow(0 0 4px var(--accent));transition:width .55s cubic-bezier(.22,.61,.36,1);transform:translateY(-50%);}
+.tl-current.flowing{animation:wire-flow .6s linear forwards;}
+@keyframes wire-flow{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+
+/* COMMON */
+.section-kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:16px;}
+.section-title{font-size:clamp(36px,5vw,64px);font-weight:900;line-height:1.1;margin-bottom:16px;}
+.section-body{font-size:17px;line-height:1.8;color:rgba(232,228,216,.7);max-width:560px;margin-bottom:32px;}
+.pull-quote{margin:48px 0;padding:32px 0;border-top:1px solid var(--dim);border-bottom:1px solid var(--dim);font-size:clamp(20px,3vw,32px);font-weight:700;line-height:1.4;color:rgba(232,228,216,.85);max-width:720px;}
+.pull-quote em{font-style:normal;color:var(--accent);}
+
+/* S1 TIMELINE */
+#s1{background:var(--bg);}
+.timeline{display:flex;gap:0;align-items:stretch;margin-top:40px;position:relative;}
+/* static wire handled by SVG now, keep ::before as dim fallback */
+.timeline::before{content:'';position:absolute;top:10px;left:12.5%;right:12.5%;height:1px;background:var(--dim);z-index:0;}
+.tl-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;z-index:1;cursor:none;padding:0 8px;}
+.tl-dot{width:20px;height:20px;border-radius:50%;background:var(--dim);border:2px solid var(--dim);transition:all .4s;flex-shrink:0;}
+.tl-dot.lit{background:var(--accent);border-color:var(--accent);box-shadow:0 0 20px var(--accent),0 0 40px rgba(255,77,0,.3);}
+.tl-dot.lit.current{animation:tlpulse 1.5s infinite;}
+@keyframes tlpulse{0%,100%{box-shadow:0 0 20px var(--accent),0 0 40px rgba(255,77,0,.3)}50%{box-shadow:0 0 30px var(--accent),0 0 60px rgba(255,77,0,.5)}}
+.tl-year{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim2);transition:color .4s;}
+.tl-dot.lit~.tl-year{color:var(--accent);}
+.tl-label{font-size:13px;text-align:center;color:rgba(232,228,216,.4);line-height:1.4;transition:color .4s;}
+.tl-item.lit .tl-label{color:rgba(232,228,216,.85);}
+.tl-icon{font-size:28px;opacity:.3;transition:opacity .4s,transform .4s;}
+.tl-item.lit .tl-icon{opacity:1;transform:scale(1.2);}
+#tl-quote{margin-top:32px;min-height:64px;padding:24px;background:rgba(255,255,255,.03);border-left:3px solid var(--accent);font-size:15px;line-height:1.7;color:rgba(232,228,216,.7);max-width:680px;display:none;}
+
+/* S2 */
+#s2{background:linear-gradient(180deg,var(--bg) 0%,#0d0a14 100%);}
+.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:40px;}
+.cap-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);padding:32px 24px;position:relative;overflow:hidden;transition:all .4s;cursor:none;}
+.cap-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,77,0,.05) 0%,transparent 60%);opacity:0;transition:opacity .4s;}
+.cap-card:hover{border-color:rgba(255,77,0,.3);transform:translateY(-4px);}
+.cap-card:hover::before{opacity:1;}
+.cap-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:16px;}
+.cap-title{font-size:22px;font-weight:700;margin-bottom:12px;}
+.cap-desc{font-size:14px;color:rgba(232,228,216,.5);line-height:1.7;}
+.cap-stat{margin-top:20px;font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--accent3);}
+.cap-stat-label{font-size:12px;color:rgba(232,228,216,.4);margin-top:4px;}
+
+/* TIME RACE */
+.time-race-wrap{grid-column:1/-1;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);padding:40px;margin-top:0;}
+.race-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--accent2);text-transform:uppercase;margin-bottom:6px;}
+.race-sublabel{font-size:13px;color:rgba(232,228,216,.4);margin-bottom:28px;line-height:1.6;}
+.scrubber-row{display:flex;align-items:center;gap:16px;margin-bottom:32px;}
+.scrubber-track{flex:1;height:6px;background:var(--dim);position:relative;cursor:none;}
+.scrubber-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--accent),var(--accent3));width:0%;transition:width .05s;}
+.scrubber-handle{position:absolute;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;background:var(--fg);border-radius:50%;left:0%;box-shadow:0 0 0 3px var(--accent3);cursor:none;}
+.scrubber-time-label{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent3);min-width:100px;text-align:right;}
+.race-cols{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.race-col{padding:24px;background:rgba(255,255,255,.015);}
+.race-col-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--dim);}
+.race-col.trad .race-col-title{color:var(--dim2);}
+.race-col.ai .race-col-title{color:var(--accent2);}
+.race-steps{display:flex;flex-direction:column;gap:0;}
+.race-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);opacity:.2;transition:opacity .4s;}
+.race-step.active{opacity:1;}
+.race-step.done{opacity:.45;}
+.race-step-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--dim2);flex-shrink:0;margin-top:4px;transition:all .4s;}
+.race-step.active .race-step-dot{border-color:var(--accent3);background:var(--accent3);box-shadow:0 0 8px var(--accent3);}
+.race-col.ai .race-step.active .race-step-dot{border-color:var(--accent2);background:var(--accent2);box-shadow:0 0 8px var(--accent2);}
+.race-step.done .race-step-dot{border-color:var(--dim2);background:var(--dim2);}
+.race-step-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.race-step-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim2);}
+.race-step.active .race-step-time{color:var(--accent3);}
+.race-col.ai .race-step.active .race-step-time{color:var(--accent2);}
+.race-banner{display:none;margin-top:16px;padding:14px 18px;}
+.race-banner.show{display:block;}
+.race-banner.ai-done{border-left:3px solid var(--accent2);background:rgba(0,229,255,.05);}
+.race-banner.trad-still{border-left:3px solid rgba(255,77,0,.3);background:rgba(255,77,0,.03);}
+.race-banner-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent2);text-transform:uppercase;margin-bottom:6px;}
+.race-banner-body{font-size:13px;line-height:1.6;color:rgba(232,228,216,.65);}
+.race-banner.trad-still .race-banner-body{color:rgba(232,228,216,.45);font-style:italic;}
+
+/* S3 REPLACEMENT */
+#s3{background:#07090f;}
+.replace-layout{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:48px;}
+.replace-list{display:flex;flex-direction:column;gap:3px;}
+.replace-item{display:flex;align-items:center;gap:14px;padding:15px 18px;background:rgba(255,255,255,.02);border-left:3px solid var(--dim);transition:all .5s;cursor:none;}
+.replace-item:hover{background:rgba(255,255,255,.04);}
+.replace-item.dead{border-left-color:var(--accent);background:rgba(255,77,0,.05);}
+.replace-item.dead .replace-name{text-decoration:line-through;text-decoration-color:var(--accent);opacity:.5;}
+.replace-item.safe{border-left-color:var(--accent2);background:rgba(0,229,255,.03);}
+.replace-item.selected{outline:1px solid rgba(255,255,255,.2);}
+.replace-rank{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim2);min-width:20px;}
+.replace-name{font-size:15px;font-weight:700;flex:1;transition:all .5s;}
+.replace-bar{width:70px;height:3px;background:var(--dim);position:relative;overflow:hidden;flex-shrink:0;}
+.replace-bar-fill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:0%;transition:width 1.5s ease;}
+.replace-item.safe .replace-bar-fill{background:var(--accent2);}
+.replace-status{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;min-width:58px;text-align:right;color:var(--dim2);transition:color .5s;}
+.replace-item.dead .replace-status{color:var(--accent);}
+.replace-item.safe .replace-status{color:var(--accent2);}
+.replace-detail{padding:32px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;justify-content:center;min-height:380px;}
+.detail-empty{text-align:center;color:rgba(232,228,216,.2);font-size:14px;line-height:1.8;}
+.detail-empty-icon{font-size:40px;margin-bottom:16px;opacity:.25;}
+.detail-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;display:none;}
+.detail-title{font-size:24px;font-weight:900;margin-bottom:16px;display:none;}
+.detail-body{font-size:14px;line-height:1.95;color:rgba(232,228,216,.72);display:none;}
+.detail-tag{display:none;margin-top:20px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+.detail-tag.danger{background:rgba(255,77,0,.1);color:var(--accent);border:1px solid rgba(255,77,0,.25);}
+.detail-tag.safe{background:rgba(0,229,255,.07);color:var(--accent2);border:1px solid rgba(0,229,255,.18);}
+.replace-trigger{margin-top:20px;display:flex;gap:12px;}
+.btn-accent{padding:14px 28px;background:var(--accent);color:var(--bg);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;border:none;cursor:none;transition:all .2s;}
+.btn-accent:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(255,77,0,.3);}
+.btn-accent:active{transform:translate(2px,2px);box-shadow:none;}
+.btn-ghost{padding:14px 28px;background:transparent;color:var(--fg);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;border:1px solid var(--dim2);cursor:none;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--fg);}
+
+/* S4 */
+#s4{background:linear-gradient(180deg,#07090f 0%,#0a050d 100%);}
+#attention-canvas{position:absolute;inset:0;z-index:0;opacity:.6;width:100%;height:100%;}
+.attention-content{position:relative;z-index:2;}
+.attention-choices{display:flex;gap:16px;margin-top:48px;flex-wrap:wrap;}
+.choice-card{flex:1;min-width:180px;padding:22px;border:1px solid var(--dim);cursor:none;transition:all .3s;position:relative;overflow:hidden;}
+.choice-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;}
+.choice-card.bad::before{background:rgba(255,77,0,.07);}
+.choice-card.good::before{background:rgba(0,229,255,.07);}
+.choice-card:hover{transform:translateY(-4px);}
+.choice-card:hover::before{opacity:1;}
+.choice-card.bad:hover{border-color:var(--accent);}
+.choice-card.good:hover{border-color:var(--accent2);}
+.choice-card.selected.bad{border-color:var(--accent);box-shadow:0 0 30px rgba(255,77,0,.2);}
+.choice-card.selected.good{border-color:var(--accent2);box-shadow:0 0 30px rgba(0,229,255,.2);}
+.choice-emoji{font-size:26px;margin-bottom:10px;}
+.choice-title{font-size:15px;font-weight:700;margin-bottom:6px;}
+.choice-desc{font-size:12px;color:rgba(232,228,216,.4);line-height:1.6;}
+.choice-result{margin-top:32px;padding:28px;background:rgba(255,255,255,.03);font-size:15px;line-height:1.85;display:none;border-left:3px solid var(--accent3);}
+.choice-result.show{display:block;}
+
+/* S5 */
+#s5{background:var(--bg);}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:48px;}
+.action-item{padding:28px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);display:flex;gap:18px;align-items:flex-start;transition:all .3s;cursor:none;}
+.action-item:hover{border-color:rgba(0,229,255,.2);background:rgba(0,229,255,.03);}
+.action-check{width:24px;height:24px;border:1.5px solid var(--dim2);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .3s;margin-top:2px;}
+.action-item.checked .action-check{background:var(--accent2);border-color:var(--accent2);color:var(--bg);}
+.action-text h4{font-size:16px;font-weight:700;margin-bottom:6px;}
+.action-text p{font-size:13px;color:rgba(232,228,216,.45);line-height:1.6;}
+.cost-tag{display:inline-block;margin-top:8px;padding:3px 10px;background:rgba(255,204,0,.1);color:var(--accent3);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;}
+#action-summary{margin-top:40px;padding:28px 32px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);display:none;}
+.summary-count-row{display:flex;align-items:baseline;gap:12px;margin-bottom:10px;}
+.summary-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(232,228,216,.4);text-transform:uppercase;}
+#check-count{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;transition:color .5s,transform .5s,text-shadow .5s;display:inline-block;transform-origin:center bottom;}
+#summary-msg{font-size:15px;line-height:1.7;transition:all .4s;}
+
+/* S6 ENDING */
+#s6{background:var(--bg);min-height:100vh;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;}
+#end-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+.end-content{position:relative;z-index:2;max-width:820px;margin:0 auto;}
+.end-kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--accent2);text-transform:uppercase;margin-bottom:32px;}
+.end-title{font-size:clamp(48px,8vw,100px);font-weight:900;line-height:.95;letter-spacing:-2px;margin-bottom:36px;}
+.end-title span{color:var(--accent);}
+.end-words{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:48px;}
+.end-word{padding:8px 18px;border:1px solid rgba(255,255,255,.07);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:rgba(232,228,216,.3);text-transform:uppercase;transition:all .4s;cursor:none;}
+.end-word:hover{border-color:var(--accent);color:var(--accent);}
+.end-word.lit{border-color:var(--accent2);color:var(--accent2);background:rgba(0,229,255,.05);}
+.end-quote{font-family:'Ma Shan Zheng',cursive;font-size:clamp(17px,2.2vw,24px);color:rgba(232,228,216,.55);line-height:2;margin-bottom:48px;}
+.end-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.end-btn-primary{padding:16px 40px;background:var(--accent);color:var(--bg);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:3px;text-transform:uppercase;border:none;cursor:none;transition:all .2s;text-decoration:none;display:inline-block;}
+.end-btn-primary:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(255,77,0,.4);}
+.end-btn-ghost{padding:16px 40px;background:transparent;color:var(--fg);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:3px;text-transform:uppercase;border:1px solid var(--dim2);cursor:none;transition:all .2s;text-decoration:none;display:inline-block;}
+.end-btn-ghost:hover{border-color:var(--fg);}
+.end-timestamp{margin-top:64px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;color:rgba(232,228,216,.13);}
+
+@media(max-width:760px){
+  section{padding:60px 6vw;}
+  .cap-grid,.race-cols,.replace-layout,.action-grid{grid-template-columns:1fr;}
+  .timeline{flex-wrap:wrap;gap:24px;}.timeline::before{display:none;}
+  body{cursor:auto;}#cursor-dot,#cursor-ring,#cursor-label{display:none;}
+  .attention-choices{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div id="cursor-label"></div>
+<div id="progress"></div>
+<div id="chapnav">
+  <div class="chapnav-dot active" data-section="0"></div>
+  <div class="chapnav-dot" data-section="1"></div>
+  <div class="chapnav-dot" data-section="2"></div>
+  <div class="chapnav-dot" data-section="3"></div>
+  <div class="chapnav-dot" data-section="4"></div>
+  <div class="chapnav-dot" data-section="5"></div>
+  <div class="chapnav-dot" data-section="6"></div>
+</div>
+
+<!-- S0 HERO -->
+<section id="s0">
+  <canvas id="particle-canvas"></canvas>
+  <div class="hero-content">
+    <p class="hero-kicker">一场直播的核心 · 2026.05.16</p>
+    <h1 class="hero-title">你的<em>注意力</em><br>正在<span class="glitch-wrap" data-text="被收割">被收割<span class="scan"></span></span></h1>
+    <p class="hero-sub">每天有一亿人把两小时交给短剧。<br>而另一些人，正在用这两小时收割他们。</p>
+    <div class="hero-counter-wrap">
+      <div class="hero-counter-label">你读这行字的时候，红果短剧已被刷了</div>
+      <div class="hero-counter" id="live-counter">0</div>
+      <div style="font-size:12px;color:rgba(232,228,216,.22);margin-top:6px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;">次 · 估算值（日均1亿用户 × 每日120次滑动）</div>
+    </div>
+  </div>
+  <div class="scroll-hint"><span>向下滑动</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- S1 REVOLUTION -->
+<section id="s1">
+  <div class="reveal">
+    <p class="section-kicker">Chapter 01 · 历史定位</p>
+    <h2 class="section-title">第四次工业革命<br>已经开始了</h2>
+    <p class="section-body">前三次，都让少数先行者积累了不可思议的财富。而大多数人——是在革命结束后，才明白自己错过了什么。</p>
+    <p class="section-body" style="font-size:14px;margin-bottom:0;color:rgba(232,228,216,.45);">点击每个节点，看看那个时代的人在想什么。</p>
+  </div>
+  <div class="timeline reveal" id="timeline-wrap">
+    <svg class="timeline-electric" id="tl-svg" preserveAspectRatio="none" viewBox="0 0 100 2" xmlns="http://www.w3.org/2000/svg">
+      <line class="tl-wire" x1="0" y1="1" x2="100" y2="1"/>
+      <line class="tl-current" id="tl-wire-current" x1="0" y1="1" x2="0" y2="1"/>
+    </svg>
+    <div id="tl-current-bar"></div>
+    <div class="tl-item" data-idx="0"><div class="tl-dot lit" id="tl0"></div><div class="tl-year">1760s</div><div class="tl-icon">💨</div><div class="tl-label">蒸汽机<br>第一次工业革命</div></div>
+    <div class="tl-item" data-idx="1"><div class="tl-dot" id="tl1"></div><div class="tl-year">1870s</div><div class="tl-icon">⚡</div><div class="tl-label">电力<br>第二次工业革命</div></div>
+    <div class="tl-item" data-idx="2"><div class="tl-dot" id="tl2"></div><div class="tl-year">1970s</div><div class="tl-icon">💻</div><div class="tl-label">计算机<br>信息时代</div></div>
+    <div class="tl-item" data-idx="3"><div class="tl-dot" id="tl3"></div><div class="tl-year">2026年5月</div><div class="tl-icon">🤖</div><div class="tl-label">人工智能<br>正在发生</div></div>
+  </div>
+  <div id="tl-quote" class="reveal"></div>
+  <div class="pull-quote reveal">那些在信息时代崛起的人，<br>靠的不是比你聪明——靠的是<em>早了十年</em>。</div>
+</section>
+
+<!-- S2 AI CAPABILITIES -->
+<section id="s2">
+  <div class="reveal">
+    <p class="section-kicker">Chapter 02 · AI能做什么</p>
+    <h2 class="section-title">那些你以为<br>需要人来做的事</h2>
+    <p class="section-body">花了四万多块钱，在真实场景里跑通了这些能力。以下是验证结果。</p>
+  </div>
+  <div class="cap-grid reveal">
+    <div class="cap-card"><div class="cap-num">01 / 图片</div><div class="cap-title">AI写真</div><div class="cap-desc">一张高质量人像写真，过去需要摄影师、换装、修图，花费数千元。现在……</div><div class="cap-stat">¥30</div><div class="cap-stat-label">每张 · 一下午可做十几张</div></div>
+    <div class="cap-card"><div class="cap-num">02 / 网站</div><div class="cap-title">一句话建站</div><div class="cap-desc">苹果官网风格？一句提示词，秒级复刻。过去需要一支团队和几十万预算。</div><div class="cap-stat">1句</div><div class="cap-stat-label">提示词 · 生成苹果级别设计</div></div>
+    <div class="cap-card"><div class="cap-num">03 / 视频</div><div class="cap-title">批量剪辑</div><div class="cap-desc">文案自动、配音自动、剪辑自动、发布自动。一个人可以顶一个十人剪辑团队。</div><div class="cap-stat">15万/月</div><div class="cap-stat-label">这是过去养十个剪辑的费用</div></div>
+
+    <div class="time-race-wrap reveal">
+      <div class="race-label">拖动时间轴 · 看两个世界同时运转</div>
+      <div class="race-sublabel">同样是"拍一组写真"——拖动时间条，AI方式和传统方式的差距会在你眼前展开。</div>
+      <div class="scrubber-row">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(232,228,216,.35);letter-spacing:1px;min-width:60px;">时间流逝</span>
+        <div class="scrubber-track" id="scrubber-track">
+          <div class="scrubber-fill" id="scrubber-fill"></div>
+          <div class="scrubber-handle" id="scrubber-handle"></div>
+        </div>
+        <span class="scrubber-time-label" id="scrubber-display">第 0 天</span>
+      </div>
+      <div class="race-cols">
+        <div class="race-col trad">
+          <div class="race-col-title">📷 传统方式</div>
+          <div class="race-steps" id="trad-steps">
+            <div class="race-step" data-s="0" data-e="7"><div class="race-step-dot"></div><div><div class="race-step-name">预约摄影师</div><div class="race-step-time">第1–7天 · 等档期</div></div></div>
+            <div class="race-step" data-s="7" data-e="7.5"><div class="race-step-dot"></div><div><div class="race-step-name">化妆 · 6套换装</div><div class="race-step-time">第8天 · 早上两小时化妆</div></div></div>
+            <div class="race-step" data-s="7.5" data-e="8"><div class="race-step-dot"></div><div><div class="race-step-name">拍摄6小时</div><div class="race-step-time">第8天 · 拍到脸僵、想回家</div></div></div>
+            <div class="race-step" data-s="8" data-e="22"><div class="race-step-dot"></div><div><div class="race-step-name">等修图</div><div class="race-step-time">第9–22天 · 催了两次没动静</div></div></div>
+            <div class="race-step" data-s="22" data-e="24"><div class="race-step-dot"></div><div><div class="race-step-name">交图 · 结账</div><div class="race-step-time">第23天 · ¥25,000，满意的就4张</div></div></div>
+          </div>
+          <div class="race-banner trad-still" id="trad-banner">
+            <div class="race-banner-body" id="trad-banner-body">还没开始……</div>
+          </div>
+        </div>
+        <div class="race-col ai">
+          <div class="race-col-title">🤖 AI方式</div>
+          <div class="race-steps" id="ai-steps">
+            <div class="race-step" data-s="0" data-e="0.02"><div class="race-step-dot"></div><div><div class="race-step-name">写一句提示词</div><div class="race-step-time">第0天 · 30秒</div></div></div>
+            <div class="race-step" data-s="0.02" data-e="0.05"><div class="race-step-dot"></div><div><div class="race-step-name">生成1000张候选图</div><div class="race-step-time">第0天 · 不到5分钟</div></div></div>
+            <div class="race-step" data-s="0.05" data-e="0.3"><div class="race-step-dot"></div><div><div class="race-step-name">挑选最满意的100张</div><div class="race-step-time">第0天 · 一个下午</div></div></div>
+            <div class="race-step" data-s="0.3" data-e="0.5"><div class="race-step-dot"></div><div><div class="race-step-name">结账，出门接单</div><div class="race-step-time">第0天 · ¥30–100，不用出门</div></div></div>
+          </div>
+          <div class="race-banner ai-done" id="ai-banner">
+            <div class="race-banner-title" id="ai-banner-title">✓ 已完成</div>
+            <div class="race-banner-body" id="ai-banner-body">照片到手了。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S3 REPLACEMENT -->
+<section id="s3">
+  <div class="reveal">
+    <p class="section-kicker">Chapter 03 · 谁先被替代</p>
+    <h2 class="section-title">倒计时<br>已经开始</h2>
+    <p class="section-body">点击左侧每一项，看看 AI 替代的背后，是什么正在消失。</p>
+  </div>
+  <div class="replace-layout reveal">
+    <div>
+      <div class="replace-list" id="replace-list">
+        <div class="replace-item" data-bar="95" data-key="wentu"><div class="replace-rank">01</div><div class="replace-name">图文创作者</div><div class="replace-bar"><div class="replace-bar-fill"></div></div><div class="replace-status">—</div></div>
+        <div class="replace-item" data-bar="88" data-key="sheji"><div class="replace-rank">02</div><div class="replace-name">平面设计师（中低端）</div><div class="replace-bar"><div class="replace-bar-fill"></div></div><div class="replace-status">—</div></div>
+        <div class="replace-item" data-bar="85" data-key="yinglou"><div class="replace-rank">03</div><div class="replace-name">影楼摄影师</div><div class="replace-bar"><div class="replace-bar-fill"></div></div><div class="replace-status">—</div></div>
+        <div class="replace-item" data-bar="75" data-key="jianji"><div class="replace-rank">04</div><div class="replace-name">视频剪辑（标准流程）</div><div class="replace-bar"><div class="replace-bar-fill"></div></div><div class="replace-status">—</div></div>
+        <div class="replace-item" data-bar="55" data-key="zhongyao"><div class="replace-rank">05</div><div class="replace-name">中腰部内容创作者</div><div class="replace-bar"><div class="replace-bar-fill"></div></div><div class="replace-status">—</div></div>
+        <div class="replace-item safe" data-bar="20" data-key="zhibo"><div class="replace-rank">06</div><div class="replace-name">真人直播（暂时）</div><div class="replace-bar"><div class="replace-bar-fill"></div></div><div class="replace-status">—</div></div>
+      </div>
+      <div class="replace-trigger">
+        <button class="btn-accent" id="replace-btn">▶ 开始倒计时</button>
+        <button class="btn-ghost" id="replace-reset">重置</button>
+      </div>
+    </div>
+    <div class="replace-detail" id="replace-detail">
+      <div class="detail-empty" id="detail-empty"><div class="detail-empty-icon">←</div>点击左侧任意一项<br>查看 AI 正在替代什么</div>
+      <div class="detail-num" id="detail-num"></div>
+      <div class="detail-title" id="detail-title"></div>
+      <div class="detail-body" id="detail-body"></div>
+      <div class="detail-tag" id="detail-tag"></div>
+    </div>
+  </div>
+  <div class="pull-quote reveal">直播是最难替代的。<br>所以<em>现在开始直播</em>，是你最后的时间窗口。</div>
+</section>
+
+<!-- S4 ATTENTION -->
+<section id="s4">
+  <canvas id="attention-canvas"></canvas>
+  <div class="attention-content">
+    <div class="reveal">
+      <p class="section-kicker">Chapter 04 · 注意力战争</p>
+      <h2 class="section-title">你的今天<br>值多少钱？</h2>
+      <p class="section-body">一亿人 × 每天两小时 × 每小时注意力价值约30元。<br>这是一场每天30亿元规模的战争。<br>而你——是战场，还是赢家？</p>
+    </div>
+    <div class="reveal">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:20px;">今天你准备把注意力给谁？选一个</p>
+      <div class="attention-choices" id="attention-choices">
+        <div class="choice-card bad" data-choice="short"><div class="choice-emoji">📱</div><div class="choice-title">刷短剧/短视频</div><div class="choice-desc">反正闲着也是闲着，刷两集放松一下。</div></div>
+        <div class="choice-card bad" data-choice="game"><div class="choice-emoji">🎮</div><div class="choice-title">打游戏</div><div class="choice-desc">今天太累了，就这一局，放松一下。</div></div>
+        <div class="choice-card good" data-choice="ai"><div class="choice-emoji">🤖</div><div class="choice-title">玩AI，做东西</div><div class="choice-desc">试着让Claude帮我做点什么，哪怕只是一张图。</div></div>
+        <div class="choice-card good" data-choice="create"><div class="choice-emoji">✍️</div><div class="choice-title">创造内容</div><div class="choice-desc">写东西、做视频、学一个新工具。</div></div>
+      </div>
+      <div class="choice-result" id="choice-result"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S5 ACTION -->
+<section id="s5">
+  <div class="reveal">
+    <p class="section-kicker">Chapter 05 · 现在能做什么</p>
+    <h2 class="section-title">如果只能<br>做三件事</h2>
+    <p class="section-body">不是让你焦虑。是让你有事可做。点击每一项，标记你的行动。</p>
+  </div>
+  <div class="action-grid reveal" id="action-grid">
+    <div class="action-item" data-idx="0"><div class="action-check">✓</div><div class="action-text"><h4>订阅 Claude Pro</h4><p>主讲人反复强调：Claude是目前最强的AI工具之一，不是国内那种聊天机器人。差距，就是信息差。</p><div class="cost-tag">约 ¥140/月</div></div></div>
+    <div class="action-item" data-idx="1"><div class="action-check">✓</div><div class="action-text"><h4>订阅顶级生图工具</h4><p>图片生成能力是信息差最大的地方。用它给父母做一张AI写真，亲身体验一次。</p><div class="cost-tag">约 ¥100/月</div></div></div>
+    <div class="action-item" data-idx="2"><div class="action-check">✓</div><div class="action-text"><h4>做出第一件AI作品</h4><p>一张图、一个网站、一条视频——必须是实际做出来的东西，不是看别人做。</p><div class="cost-tag">今天就可以</div></div></div>
+    <div class="action-item" data-idx="3"><div class="action-check">✓</div><div class="action-text"><h4>把作品发出去</h4><p>发朋友圈、发小红书、发给爸妈看。只有公开，才有压力，才会继续做。</p><div class="cost-tag">需要一点勇气</div></div></div>
+    <div class="action-item" data-idx="4"><div class="action-check">✓</div><div class="action-text"><h4>每天用AI至少两小时</h4><p>不是看教程的两小时，是动手做东西的两小时。和你给短视频的量，一样多。</p><div class="cost-tag">替换短视频时间</div></div></div>
+    <div class="action-item" data-idx="5"><div class="action-check">✓</div><div class="action-text"><h4>找到一个真实需求</h4><p>闲鱼、身边的朋友、开影楼的老板——谁需要高质量的图片、网站、视频？去谈。</p><div class="cost-tag">信息差窗口还在</div></div></div>
+  </div>
+  <div id="action-summary">
+    <div class="summary-count-row">
+      <span class="summary-label">你选了</span>
+      <span id="check-count" style="color:var(--dim2);">0</span>
+      <span class="summary-label">件事</span>
+    </div>
+    <div id="summary-msg" style="font-size:15px;line-height:1.7;color:rgba(232,228,216,.5);"></div>
+  </div>
+</section>
+
+<!-- S6 ENDING -->
+<section id="s6">
+  <canvas id="end-canvas"></canvas>
+  <div class="end-content">
+    <p class="end-kicker reveal">Chapter 06 · 战场已经摆好了</p>
+    <h2 class="end-title reveal">窗口<span>正在</span><br>关闭</h2>
+    <div class="end-words reveal" id="end-words">
+      <div class="end-word">注意力</div><div class="end-word">信息差</div><div class="end-word">技术差</div>
+      <div class="end-word">稀缺性</div><div class="end-word">第四次革命</div><div class="end-word">AI写真</div>
+      <div class="end-word">一句话建站</div><div class="end-word">批量剪辑</div><div class="end-word">倒计时</div>
+      <div class="end-word">2026年5月</div>
+    </div>
+    <div class="end-quote reveal">
+      "先到的现在已经没有骨头了。<br>
+      你现在先到的，喝汤。<br>
+      再晚到的——<br>
+      就等着吃纯净水吧。"
+    </div>
+    <div class="end-actions reveal">
+      <a href="https://claude.ai" target="_blank" class="end-btn-primary">现在去用 Claude →</a>
+      <button class="end-btn-ghost" id="share-btn">把这个页面发给朋友</button>
+    </div>
+    <div class="end-timestamp reveal">直播时间：2026.05.16 20:05 · 整理 / 设计：AI协作完成</div>
+  </div>
+</section>
+
+<script>
+// CURSOR
+const dot=document.getElementById('cursor-dot'),ring=document.getElementById('cursor-ring'),lbl=document.getElementById('cursor-label');
+let mx=0,my=0,gx=0,gy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+(function ar(){gx+=(mx-gx)*.14;gy+=(my-gy)*.14;ring.style.left=gx+'px';ring.style.top=gy+'px';lbl.style.left=(gx+28)+'px';lbl.style.top=(gy-8)+'px';requestAnimationFrame(ar);})();
+function setCur(t,m){lbl.textContent=t;document.body.classList.toggle('cursor-hover',m==='hover');document.body.classList.toggle('cursor-drag',m==='drag');}
+document.querySelectorAll('button,.choice-card,.action-item,.tl-item,.cap-card,.replace-item,.end-word,.end-btn-primary,.end-btn-ghost').forEach(el=>{el.addEventListener('mouseenter',()=>setCur('PRESS','hover'));el.addEventListener('mouseleave',()=>setCur('',''));});
+document.querySelectorAll('.chapnav-dot').forEach(el=>{el.addEventListener('mouseenter',()=>setCur('GO','hover'));el.addEventListener('mouseleave',()=>setCur('',''));});
+document.getElementById('scrubber-track').addEventListener('mouseenter',()=>setCur('DRAG','drag'));
+document.getElementById('scrubber-track').addEventListener('mouseleave',()=>{if(!sDragging)setCur('','');});
+
+// PROGRESS
+window.addEventListener('scroll',()=>{document.getElementById('progress').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';});
+
+// CHAPNAV
+const secs=document.querySelectorAll('section'),cDots=document.querySelectorAll('.chapnav-dot');
+cDots.forEach(d=>d.addEventListener('click',()=>secs[+d.dataset.section].scrollIntoView({behavior:'smooth'})));
+new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const i=Array.from(secs).indexOf(e.target);cDots.forEach((d,j)=>d.classList.toggle('active',j===i));}});},{threshold:.4}).observe;
+const sObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const i=Array.from(secs).indexOf(e.target);cDots.forEach((d,j)=>d.classList.toggle('active',j===i));}});},{threshold:.4});
+secs.forEach(s=>sObs.observe(s));
+
+// REVEAL
+new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.12}).observe;
+const rObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>rObs.observe(el));
+
+// HERO PARTICLES - full section coverage
+const pC=document.getElementById('particle-canvas'),pX=pC.getContext('2d');
+function rpC(){pC.width=pC.parentElement.offsetWidth;pC.height=pC.parentElement.offsetHeight;}
+rpC();window.addEventListener('resize',rpC);
+const pArr=[];
+class P{constructor(){this.r();}r(){this.x=Math.random()*pC.width;this.y=Math.random()*pC.height;this.vx=(Math.random()-.5)*.5;this.vy=(Math.random()-.5)*.4-.05;this.life=Math.random()*280+80;this.ml=this.life;this.sz=Math.random()*2+.4;this.h=Math.random()<.3?15:(Math.random()<.5?190:50);}u(){this.x+=this.vx;this.y+=this.vy;this.life--;const dx=mx-this.x,dy=my-this.y,d=Math.sqrt(dx*dx+dy*dy);if(d<200){this.vx+=dx/d*.018;this.vy+=dy/d*.018;}this.vx*=.99;this.vy*=.99;if(this.life<=0||this.x<0||this.x>pC.width||this.y<0||this.y>pC.height)this.r();}d(){const a=(this.life/this.ml)*.7;pX.beginPath();pX.arc(this.x,this.y,this.sz,0,Math.PI*2);pX.fillStyle=`hsla(${this.h},100%,60%,${a})`;pX.fill();}}
+for(let i=0;i<230;i++)pArr.push(new P());
+(function ap(){pX.clearRect(0,0,pC.width,pC.height);for(let i=0;i<pArr.length;i++){for(let j=i+1;j<pArr.length;j++){const dx=pArr[i].x-pArr[j].x,dy=pArr[i].y-pArr[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<90){pX.beginPath();pX.moveTo(pArr[i].x,pArr[i].y);pX.lineTo(pArr[j].x,pArr[j].y);pX.strokeStyle=`rgba(255,77,0,${(1-d/90)*.09})`;pX.lineWidth=.5;pX.stroke();}}pArr[i].u();pArr[i].d();}requestAnimationFrame(ap);})();
+
+// LIVE COUNTER
+const cEl=document.getElementById('live-counter');
+let cV=Math.floor((Date.now()/1000)%86400*1200);
+(function tc(){cV+=1200/60;cEl.textContent=Math.floor(cV).toLocaleString('zh-CN');requestAnimationFrame(tc);})();
+
+// TIMELINE
+const tlQ=[
+  {txt:'1769年，瓦特改良蒸汽机。英国的工厂主说：现在一个人能顶十个。结果是：产业工人涌现，城市兴起，整个世界的财富版图彻底重写。最早进入的人，成了第一代工业资本家。',year:'1760s'},
+  {txt:'1882年，爱迪生在纽约建立第一座电力站。不到二十年，全球工厂纷纷"触电"。那些继续用蒸汽机的工厂，慢慢消失在历史里。',year:'1870s'},
+  {txt:'1994年，互联网进入中国。一个月的流量费要几百块，普通人根本用不起。张朝阳、马化腾、马云——他们进入的不是成熟的市场，是一片荒原。而正是在荒原上，才能圈到最大的地。',year:'1970s'},
+  {txt:'2026年5月。就是现在。——你在看这句话的这一刻。这扇窗口，不会永远开着。',year:'2026年5月',current:true},
+];
+const tlIt=document.querySelectorAll('.tl-item'),tlQB=document.getElementById('tl-quote');
+const tlWire=document.getElementById('tl-wire-current');
+const tlBar=document.getElementById('tl-current-bar');
+function actTL(idx){tlIt.forEach((it,i)=>{const d=it.querySelector('.tl-dot');if(i<=idx){d.classList.add('lit');it.classList.add('lit');}else{d.classList.remove('lit');it.classList.remove('lit');}d.classList.toggle('current',i===idx&&i===3);});const q=tlQ[idx];tlQB.style.display='block';tlQB.innerHTML=`<span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--accent);display:block;margin-bottom:8px;">${q.year}</span>${q.txt}`;}
+let currentTlIdx=0;
+tlIt.forEach((it,i)=>it.addEventListener('click',()=>{currentTlIdx=i;actTL(i);updateWire(i);}));
+window.addEventListener('resize',()=>updateWire(currentTlIdx));
+actTL(0);updateWire(0);
+
+// TIME RACE
+const sTr=document.getElementById('scrubber-track'),sFl=document.getElementById('scrubber-fill'),sHn=document.getElementById('scrubber-handle'),sDp=document.getElementById('scrubber-display');
+const DAYS=28;
+let sDragging=false;
+const tradSteps=document.querySelectorAll('#trad-steps .race-step');
+const aiSteps=document.querySelectorAll('#ai-steps .race-step');
+const aiBanner=document.getElementById('ai-banner'),aiBannerTitle=document.getElementById('ai-banner-title'),aiBannerBody=document.getElementById('ai-banner-body');
+const tradBanner=document.getElementById('trad-banner'),tradBannerBody=document.getElementById('trad-banner-body');
+
+const aiMsgs=[
+  {d:.5,t:'✓ 已完成',b:'照片已到手，开始整理作品集了。'},
+  {d:1,t:'✓ 已完成 · 接单中',b:'接到第一个陌生人订单，¥30一张图。'},
+  {d:3,t:'✓ 已完成 · 赚钱中',b:'一周做了20单，进账600块，没出门。'},
+  {d:7,t:'✓ 已完成 · 持续接单',b:'开始在闲鱼接单，¥100一张，排队等着。'},
+  {d:14,t:'✓ 已完成 · 业务扩大',b:'有人问能不能做网站，谈成了第一个大单。'},
+  {d:21,t:'✓ 已完成 · 月入过万',b:'月收入第一次超过了一万元……'},
+];
+const tradMsgs=[
+  {d:0,b:'准备预约摄影师……'},
+  {d:7,b:'档期约好了，等着去拍……'},
+  {d:7.5,b:'今天在影棚，换第三套衣服了……'},
+  {d:8,b:'拍完了，在等修图……'},
+  {d:15,b:'修图师说还要等几天……催了两次没动静……'},
+  {d:22,b:'图终于出来了。满意的就4张。花了¥25,000。'},
+];
+
+function dayLabel(d){if(d<0.05)return'第 0 天';if(d<1)return'第 0 天（几小时后）';return`第 ${Math.floor(d)} 天`;}
+function updateRace(pct){
+  pct=Math.max(0,Math.min(100,pct));
+  sFl.style.width=pct+'%';sHn.style.left=pct+'%';
+  const day=pct/100*DAYS;
+  sDp.textContent=dayLabel(day);
+  tradSteps.forEach(s=>{const a=+s.dataset.s,b=+s.dataset.e;if(day>=b){s.classList.add('done');s.classList.remove('active');}else if(day>=a){s.classList.add('active');s.classList.remove('done');}else{s.classList.remove('active','done');}});
+  aiSteps.forEach(s=>{const a=+s.dataset.s,b=+s.dataset.e;if(day>=b){s.classList.add('done');s.classList.remove('active');}else if(day>=a){s.classList.add('active');s.classList.remove('done');}else{s.classList.remove('active','done');}});
+  if(day>=.5){aiBanner.classList.add('show');let m=aiMsgs[0];for(const x of aiMsgs)if(day>=x.d)m=x;aiBannerTitle.textContent=m.t;aiBannerBody.textContent=m.b;}else aiBanner.classList.remove('show');
+  if(day>=.1){tradBanner.classList.add('show');let m=tradMsgs[0];for(const x of tradMsgs)if(day>=x.d)m=x;tradBannerBody.textContent=m.b;}else tradBanner.classList.remove('show');
+}
+function sGP(e){const r=sTr.getBoundingClientRect(),cx=e.touches?e.touches[0].clientX:e.clientX;return((cx-r.left)/r.width)*100;}
+sTr.addEventListener('mousedown',e=>{sDragging=true;updateRace(sGP(e));setCur('DRAG','drag');});
+document.addEventListener('mousemove',e=>{if(sDragging)updateRace(sGP(e));});
+document.addEventListener('mouseup',()=>{sDragging=false;setCur('','');});
+sTr.addEventListener('touchstart',e=>updateRace(sGP(e)),{passive:true});
+sTr.addEventListener('touchmove',e=>updateRace(sGP(e)),{passive:true});
+updateRace(0);
+
+// REPLACEMENT
+const repData={
+  wentu:{num:'01',title:'图文创作者',tag:'danger',tagTxt:'⚡ 已基本替代',body:'你花了三年，学会写一篇让人读下去的文章。\n\nAI用了三秒。\n\n而且它不会累，不会有情绪，不会要求加薪。一条5000字的深度文章，AI的成本大概是两毛钱电费。\n\n如果你的账号没有强人设、没有粉丝粘性——那你和AI的竞争，从一开始就输了。'},
+  sheji:{num:'02',title:'平面设计师（中低端）',tag:'danger',tagTxt:'⚡ 已基本替代',body:'你学了一年Photoshop，可以做出一张还不错的海报。\n\nAI用一句提示词，出一千张候选图，然后让你选。\n\n请四个美工，每月六万块，出来的图你们都见过——很平庸。现在那六万块，能开四百个AI会员。'},
+  yinglou:{num:'03',title:'影楼摄影师',tag:'danger',tagTxt:'⚡ 已基本替代',body:'拍一组写真：约档期、化妆换装、拍六小时、等两周修图、花两万五。\n\n满意的，可能就四张。\n\nAI：一句话，一下午，三十块，一千张候选图。\n\n你还在排影楼的档期，那边已经开始接单赚钱了。'},
+  jianji:{num:'04',title:'视频剪辑（标准流程）',tag:'danger',tagTxt:'🔄 加速替代中',body:'过去养了十个剪辑，每月十五万。每条视频，提前四五天沟通，第一轮永远不满意。\n\n现在：文案自动，配音自动，剪辑自动，发布自动。一个人，一天，可以做一百条视频。\n\n那十个人的饭碗，正在被一行代码慢慢端走。'},
+  zhongyao:{num:'05',title:'中腰部内容创作者',tag:'danger',tagTxt:'⚠️ 高危',body:'你每周发一篇文章，做一条视频，维持着几千到几万的粉丝。\n\nAI的批量内容生产开始之后，平台上每天涌现的内容量会是现在的一百倍。\n\n你的内容，会被淹没在算法的海浪里，连浪花都算不上。\n\n除非——你是那个用AI批量生产的人，而不是被它淹没的人。'},
+  zhibo:{num:'06',title:'真人直播（暂时）',tag:'safe',tagTxt:'🛡️ 暂时安全',body:'情绪、临场感、不确定性——这三件事，AI暂时做不到。\n\n"暂时"这个词，大概值一两年的时间。\n\n数字人一直都有，之所以还没彻底替代真人，是因为实时交互的成本还太高。但这个成本，正在以每六个月腰斩一次的速度下降。\n\n所以：现在就开始直播，是你最后的窗口。'},
+};
+const repItems=document.querySelectorAll('.replace-item');
+const dEmpty=document.getElementById('detail-empty'),dNum=document.getElementById('detail-num'),dTitle=document.getElementById('detail-title'),dBody=document.getElementById('detail-body'),dTag=document.getElementById('detail-tag');
+let repStep=0;
+const repBtn=document.getElementById('replace-btn'),repReset=document.getElementById('replace-reset');
+const repTypes=['dead','dead','dead','dead','dead','safe'];
+
+function showDetail(key){const d=repData[key];if(!d)return;dEmpty.style.display='none';[dNum,dTitle,dBody,dTag].forEach(e=>e.style.display='block');dNum.textContent=d.num+' / '+d.title;dTitle.textContent=d.title;dBody.innerHTML=d.body.replace(/\n/g,'<br>');dTag.textContent=d.tagTxt;dTag.className='detail-tag '+(d.tag==='safe'?'safe':'danger');repItems.forEach(i=>i.classList.remove('selected'));document.querySelector(`.replace-item[data-key="${key}"]`)?.classList.add('selected');}
+
+repItems.forEach(item=>{item.addEventListener('click',()=>{showDetail(item.dataset.key);item.querySelector('.replace-bar-fill').style.width=item.dataset.bar+'%';});});
+repBtn.addEventListener('click',()=>{if(repStep>=repItems.length)return;const item=repItems[repStep],type=repTypes[repStep];if(type==='dead')item.classList.add('dead');else item.classList.add('safe');item.querySelector('.replace-bar-fill').style.width=item.dataset.bar+'%';item.querySelector('.replace-status').textContent=type==='safe'?'🛡️ 暂时安全':'⚡ 替代中';showDetail(item.dataset.key);repStep++;if(repStep>=repItems.length){repBtn.textContent='✓ 完成';repBtn.disabled=true;}else repBtn.textContent=`▶ 下一个 (${repStep}/${repItems.length})`;});
+repReset.addEventListener('click',()=>{repStep=0;repBtn.disabled=false;repBtn.textContent='▶ 开始倒计时';repItems.forEach(i=>{i.classList.remove('dead','safe','selected');i.querySelector('.replace-status').textContent='—';i.querySelector('.replace-bar-fill').style.width='0%';});[dNum,dTitle,dBody,dTag].forEach(e=>e.style.display='none');dEmpty.style.display='block';});
+
+// ATTENTION CANVAS
+const aC=document.getElementById('attention-canvas'),aX=aC.getContext('2d');
+function rpA(){aC.width=aC.parentElement.offsetWidth;aC.height=aC.parentElement.offsetHeight;}
+rpA();window.addEventListener('resize',rpA);
+let aPs=[],badR=.5;
+class AP{constructor(){this.x=aC.width/2+(Math.random()-.5)*80;this.y=aC.height/2+(Math.random()-.5)*80;this.bad=Math.random()<badR;this.vx=(Math.random()-.5)*3;this.vy=(Math.random()-.5)*3;this.sz=Math.random()*3+1;this.life=120+Math.random()*60;this.ml=this.life;}u(){const tx=this.bad?aC.width*.1:aC.width*.9,ty=aC.height*.5;this.vx+=(tx-this.x)*.003;this.vy+=(ty-this.y)*.003;this.vx*=.95;this.vy*=.95;this.x+=this.vx;this.y+=this.vy;this.life--;}d(){const a=(this.life/this.ml)*.8,c=this.bad?`rgba(255,77,0,${a})`:`rgba(0,229,255,${a})`;aX.beginPath();aX.arc(this.x,this.y,this.sz,0,Math.PI*2);aX.fillStyle=c;aX.fill();}}
+(function aa(){aX.clearRect(0,0,aC.width,aC.height);if(Math.random()<.35)aPs.push(new AP());aPs=aPs.filter(p=>p.life>0);aPs.forEach(p=>{p.u();p.d();});requestAnimationFrame(aa);})();
+
+const choiceRes={
+  short:{bad:true,r:.92,msg:'<strong style="color:var(--accent)">你以为你在刷短视频——实际上是短视频在刷你。</strong><br><br>每一次下滑，算法都在更精准地锁定你的弱点：你在哪里停留、在哪里皱眉、在哪里心跳加速。你的时间、注意力、多巴胺，正在被打包出售。<br><br>买家是你永远不会认识的广告主。而你，什么都没得到。'},
+  game:{bad:true,r:.85,msg:'<strong style="color:var(--accent)">游戏公司比你更了解你。</strong><br><br>那个"再来一局"的冲动，是精心设计的成瘾机制。不是你的意志力不够——是你在和一支几千人的工程师团队对抗。<br><br>你赢不了。但你可以选择不上场。'},
+  ai:{bad:false,r:.1,msg:'<strong style="color:var(--accent2)">给AI发一句提示词，等它输出，感到一点点惊喜，再试一次——</strong><br><br>这也是上瘾。只不过这种上瘾，会让你越来越值钱。<br><br>最好的情况，是你对AI上瘾。因为这个上瘾，是唯一一种上瘾之后反而能让你进入下一个时代的。'},
+  create:{bad:false,r:.05,msg:'<strong style="color:var(--accent2)">你选择把注意力交给"未来的自己"，而不是"当下的快感"。</strong><br><br>大多数人，一辈子都做不到这件事——不是因为不知道，而是因为当下的诱惑太具体，未来的回报太模糊。<br><br>你做到了。这一次。'},
+};
+document.querySelectorAll('.choice-card').forEach(c=>{c.addEventListener('click',()=>{const k=c.dataset.choice,r=choiceRes[k];document.querySelectorAll('.choice-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');badR=r.r;const cr=document.getElementById('choice-result');cr.innerHTML=r.msg;cr.classList.add('show');cr.style.borderLeftColor=r.bad?'var(--accent)':'var(--accent2)';});});
+
+// ACTION ITEMS
+const sumData=[
+  {c:0,col:'var(--dim2)',sc:'1',fw:'400',gl:'none',msg:''},
+  {c:1,col:'rgba(232,228,216,.6)',sc:'1.05',fw:'400',gl:'none',msg:'迈出了第一步。哪怕只是一步。'},
+  {c:2,col:'rgba(232,228,216,.8)',sc:'1.1',fw:'400',gl:'none',msg:'两件事。开始有点意思了。'},
+  {c:3,col:'var(--accent3)',sc:'1.2',fw:'700',gl:'0 0 20px rgba(255,204,0,.3)',msg:'三件。已经比你身边 90% 的人做的多了。'},
+  {c:4,col:'var(--accent3)',sc:'1.3',fw:'700',gl:'0 0 30px rgba(255,204,0,.4)',msg:'四件。不要急着今天全做完，慢慢来，来得及。'},
+  {c:5,col:'var(--accent)',sc:'1.4',fw:'900',gl:'0 0 40px rgba(255,77,0,.5)',msg:'五件。你很认真。慢慢来，来得及。'},
+  {c:6,col:'var(--accent2)',sc:'1.6',fw:'900',gl:'0 0 60px rgba(0,229,255,.6)',msg:'不要急着今天全做完，慢慢来，来得及。'},
+];
+const actItems=document.querySelectorAll('.action-item'),actSum=document.getElementById('action-summary'),cntEl=document.getElementById('check-count'),msgEl=document.getElementById('summary-msg');
+actItems.forEach(item=>{item.addEventListener('click',()=>{item.classList.toggle('checked');const n=document.querySelectorAll('.action-item.checked').length;actSum.style.display='block';const d=sumData[n];cntEl.textContent=n;cntEl.style.color=d.col;cntEl.style.transform=`scale(${d.sc})`;cntEl.style.fontWeight=d.fw;cntEl.style.textShadow=d.gl;msgEl.textContent=d.msg;msgEl.style.color=n>=4?'rgba(232,228,216,.8)':'rgba(232,228,216,.5)';});});
+
+// ENDING CANVAS
+const eC=document.getElementById('end-canvas'),eX=eC.getContext('2d');
+function rpE(){eC.width=eC.parentElement.offsetWidth;eC.height=eC.parentElement.offsetHeight;}
+rpE();window.addEventListener('resize',rpE);
+let ePs=[];
+class EP{constructor(){this.r();}r(){this.x=Math.random()*eC.width;this.y=Math.random()*eC.height;this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3-.04;this.life=Math.random()*400+100;this.ml=this.life;this.sz=Math.random()*1.5+.3;this.h=Math.random()<.5?190:50;}u(){this.x+=this.vx;this.y+=this.vy;this.life--;if(this.life<=0||this.x<0||this.x>eC.width||this.y<0||this.y>eC.height)this.r();}d(){const a=(this.life/this.ml)*.45;eX.beginPath();eX.arc(this.x,this.y,this.sz,0,Math.PI*2);eX.fillStyle=`hsla(${this.h},100%,60%,${a})`;eX.fill();}}
+for(let i=0;i<130;i++)ePs.push(new EP());
+(function ae(){eX.clearRect(0,0,eC.width,eC.height);ePs.forEach(p=>{p.u();p.d();});requestAnimationFrame(ae);})();
+
+// Light up end-words on scroll — slower, one by one
+let ewLit=false;
+new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&!ewLit){ewLit=true;document.querySelectorAll('.end-word').forEach((w,i)=>setTimeout(()=>w.classList.add('lit'),i*350+500));}});},{threshold:.3}).observe(document.getElementById('s6'));
+
+// Electric wire on timeline
+function updateWire(idx){
+  if(!tlBar)return;
+  const wrap=document.getElementById('timeline-wrap');
+  const first=document.getElementById('tl0');
+  const targetDot=document.getElementById('tl'+idx);
+  if(!wrap||!first||!targetDot)return;
+
+  const wrapRect=wrap.getBoundingClientRect();
+  const firstRect=first.getBoundingClientRect();
+  const targetRect=targetDot.getBoundingClientRect();
+  const startX=firstRect.left+firstRect.width/2-wrapRect.left;
+  const targetX=targetRect.left+targetRect.width/2-wrapRect.left;
+
+  tlBar.style.left=startX+'px';
+  tlBar.style.width=Math.max(0,targetX-startX)+'px';
+
+  // Keep the old SVG line in sync but hidden, so no other code depends on it visually.
+  if(tlWire){
+    const total=(document.getElementById('tl3').getBoundingClientRect().left+document.getElementById('tl3').getBoundingClientRect().width/2)-(firstRect.left+firstRect.width/2);
+    const pct=total?((targetX-startX)/total)*100:0;
+    tlWire.setAttribute('x2',pct.toFixed(3));
+  }
+
+  setTimeout(()=>{
+    const dot=document.getElementById('tl'+idx);
+    if(dot){dot.style.boxShadow='0 0 40px #ff4d00,0 0 80px rgba(255,77,0,.8)';setTimeout(()=>{dot.style.boxShadow='';},300);}
+  },550);
+}
+
+// Share
+document.getElementById('share-btn').addEventListener('click',function(){if(navigator.clipboard)navigator.clipboard.writeText(window.location.href);this.textContent='链接已复制 ✓';});
+</script>
+</body>
+</html>
